@@ -20,8 +20,8 @@ export default function Synopsis() {
       })
       .finally(() => {
         setIsLoading(false);
+        // when we get the data, we set isLoading to false
       });
-    // the above line sets the data to the state
   }, []);
 
   return (
