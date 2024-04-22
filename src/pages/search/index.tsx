@@ -1,3 +1,5 @@
+import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
 export default function Search() {
@@ -33,20 +35,37 @@ export default function Search() {
 
   return (
     <>
+      <Link href="/">Home</Link>
       <form onSubmit={onSubmit}>
         <label htmlFor="searchInput">
           Search anime:
           <input type="text" name="animeName" />
         </label>
         <input type="submit" value="Submit" />
-        {isLoading ? (
-          <p>Loading...</p>
-        ) : (
-          data && <p>{JSON.stringify(data.data[0])}</p>
-          // this still returns an array, we can't parse this
-          // i can create a new div and map through the array
-          // displaying some of the data like title, image, etc.
-        )}
+        <p>
+          {isLoading
+            ? "Loading..."
+            : data && (
+                <div>
+                  {data.data.map((anime: any) => (
+                    // this maps out every anime in the data
+                    // i want only the first one
+                    // maybe display the search results in a bento box?
+                    <div key={anime.mal_id}>
+                      <h3>{anime.title_english}</h3>
+                      <p>{anime.title_japanese}</p>
+                      <p>{anime.synopsis}</p>
+                      <Image
+                        src={anime.images.jpg.image_url}
+                        alt={anime.title_english}
+                        width={200}
+                        height={300}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+        </p>
       </form>
     </>
   );
