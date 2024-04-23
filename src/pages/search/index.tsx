@@ -34,42 +34,66 @@ export default function Search() {
   }
 
   return (
-    <>
-      <Link href="/">Home</Link>
-      <form onSubmit={onSubmit}>
-        <label htmlFor="searchInput">
-          Search anime:
-          <input type="text" name="animeName" />
+    <div className="h-full w-full bg-slate-500 text-white">
+      <Link
+        className="text-blue-300 font-bold self-center justify-center"
+        href="/"
+        // this isn't centering properly
+        // might use an actual header later on
+      >
+        Home
+      </Link>
+      <form
+        className="flex flex-col justify-center items-center"
+        onSubmit={onSubmit}
+      >
+        <label
+          className="flex flex-col justify-center items-center"
+          htmlFor="searchInput"
+        >
+          <p className="font-bold">Search anime:</p>
+          <input
+            type="text"
+            name="animeName"
+            className="text-black text-pretty p-2 rounded-lg text-center bg-slate-50"
+          />
         </label>
-        <input type="submit" value="Submit" />
-        <p>
-          {isLoading
-            ? "Loading..."
-            : data && (
-                <div>
-                  {data.data.map((anime: any) => (
-                    // this maps out every anime in the data
-                    // i want only the first one
-                    // maybe display the search results in a bento box?
-                    <div key={anime.mal_id}>
-                      <h3>{anime.title_english}</h3>
-                      <p>{anime.title_japanese}</p>
-                      <p>{anime.synopsis}</p>
-                      <Image
-                        src={anime.images.jpg.image_url}
-                        alt={anime.title_english}
-                        width={200}
-                        height={300}
-                      />
-                    </div>
-                  ))}
+        <input
+          className="bg-slate-800 rounded-lg p-2 m-2 text-white text-center"
+          type="submit"
+          value="Submit"
+        />
+        {isLoading ? (
+          <p>Loading...</p>
+        ) : (
+          data && (
+            <div>
+              {data.data.map((anime: any) => (
+                // this maps out every anime in the data
+                // maybe display the search results in a bento box?
+                <div
+                  key={anime.mal_id}
+                  // we might be able to use this to link to the anime page
+                  className="flex text-balance text-justify flex-col justify-center items-center m-10 bg-slate-800 p-5 rounded-3xl"
+                >
+                  <h3 className="text-bold text-2xl m-1">
+                    {anime.title_english}
+                  </h3>
+                  <p className="m-1">{anime.title_japanese}</p>
+                  <p className="m-1 text-center">{anime.synopsis}</p>
+                  <Image
+                    src={anime.images.jpg.image_url}
+                    alt={anime.title_english}
+                    width={200}
+                    height={300}
+                    className="m-1"
+                  />
                 </div>
-              )}
-        </p>
+              ))}
+            </div>
+          )
+        )}
       </form>
-    </>
+    </div>
   );
-  //   this will search for anime and display them
-  //  we will use the Jikan API
-  //   display a list of them
 }
