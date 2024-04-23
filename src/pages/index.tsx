@@ -10,7 +10,9 @@ export default function Home() {
       <Link href="/search" className="text-blue-500">
         Search
       </Link>
+      <Link href="/episodes" className="text-blue-500">
+        Episodes
+      </Link>
     </div>
   );
 }
-// TODO: make search bar

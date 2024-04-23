@@ -35,14 +35,16 @@ export default function Search() {
 
   return (
     <div className="h-full w-full bg-slate-500 text-white">
-      <Link
-        className="text-blue-300 font-bold self-center justify-center"
-        href="/"
-        // this isn't centering properly
-        // might use an actual header later on
-      >
-        Home
-      </Link>
+      <div className="flex flex-col justify-center items-center mb-3">
+        <Link
+          className="text-blue-300 font-extrabold text-xl"
+          href="/"
+          // this isn't centering properly
+          // might use an actual header later on
+        >
+          Home
+        </Link>
+      </div>
       <form
         className="flex flex-col justify-center items-center"
         onSubmit={onSubmit}
@@ -88,6 +90,7 @@ export default function Search() {
                     height={300}
                     className="m-1"
                   />
+                  {/* might consider making the image next to the synopsis */}
                 </div>
               ))}
             </div>
