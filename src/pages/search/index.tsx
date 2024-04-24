@@ -1,9 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import Skeleton from "react-loading-skeleton";
 
 export default function Search() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState({});
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -33,7 +34,7 @@ export default function Search() {
   }
 
   return (
-    <div className="h-full w-full bg-slate-500 text-white">
+    <div className="h-full w-full bg-slate-500 min-h-screen text-white">
       <div className="flex flex-col justify-center items-center mb-3">
         <Link className="text-blue-300 font-extrabold text-xl" href="/">
           Home
@@ -62,7 +63,8 @@ export default function Search() {
         {isLoading ? (
           <p>Loading...</p>
         ) : (
-          data && (
+          data?.data?.length > 0 && (
+            // checks if data is not null and if there are any results
             <div>
               {data.data.map((anime: any) => (
                 // this maps out every anime in the data
