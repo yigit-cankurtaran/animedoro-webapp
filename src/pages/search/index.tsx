@@ -66,7 +66,7 @@ export default function Search() {
           data?.data?.length > 0 && (
             // checks if data is not null and if there are any results
             <div>
-              {data.data.map((anime: any) => (
+              {data?.data.map((anime: any) => (
                 // this maps out every anime in the data
                 // maybe display the search results in a bento box?
                 <div

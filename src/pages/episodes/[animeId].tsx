@@ -7,6 +7,8 @@ export default function AnimeId() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [episodes, setEpisodes] = useState([]);
+  const [data, setData] = useState({} as any);
+  // there's a filler boolean tag so we can add a switch for it
   const { animeId } = router.query;
   // fetch episodes from the API
   fetch(`https://api.jikan.moe/v4/anime/${animeId}/episodes`)
@@ -16,6 +18,7 @@ export default function AnimeId() {
     })
     .then((data) => {
       console.log(data);
+      setData(data);
     })
     .catch((error) => {
       console.error("Error fetching data: ", error);
@@ -25,6 +28,7 @@ export default function AnimeId() {
     <div>
       <h1>animeId: {animeId}</h1>
       {/* successfully gets the ID, next up we'll display the episodes and style it a bit */}
+      <p>{JSON.stringify(data)}</p>
     </div>
   );
 }
