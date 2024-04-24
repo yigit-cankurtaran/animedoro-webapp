@@ -13,8 +13,7 @@ export default function Search() {
     const animeName = formData.get("animeName");
 
     fetch(`https://api.jikan.moe/v4/anime?q=${animeName}`)
-      // this might not be the best way to do this
-      // i remember that the Jikan API has a search endpoint
+      // search endpoint
       .then((response) => {
         if (response.ok) return response.json();
         else throw new Error("Failed to fetch");
@@ -36,12 +35,7 @@ export default function Search() {
   return (
     <div className="h-full w-full bg-slate-500 text-white">
       <div className="flex flex-col justify-center items-center mb-3">
-        <Link
-          className="text-blue-300 font-extrabold text-xl"
-          href="/"
-          // this isn't centering properly
-          // might use an actual header later on
-        >
+        <Link className="text-blue-300 font-extrabold text-xl" href="/">
           Home
         </Link>
       </div>
@@ -76,18 +70,28 @@ export default function Search() {
                 <div
                   key={anime.mal_id}
                   // we might be able to use this to link to the anime page
+                  // we have to use this to make sure that the key is unique
+                  // how can we pass the data to the anime page?
                   className="flex text-balance text-justify flex-col justify-center items-center m-10 bg-slate-800 p-5 rounded-3xl"
                 >
-                  <h3 className="text-bold text-2xl m-1">
+                  <Link
+                    className="text-bold text-2xl text-blue-300 m-1"
+                    href={`/episodes/${anime.mal_id}`}
+                    // we are linking to a specific anime page
+                    // dynamic routing
+                  >
                     {anime.title_english}
-                  </h3>
+                  </Link>
                   <p className="m-1">{anime.title_japanese}</p>
+                  {/* we can use these 2 to link */}
+                  {/* we'll need to create a dynamic episodes page probably */}
                   <p className="m-1 text-center">{anime.synopsis}</p>
                   <Image
                     src={anime.images.jpg.image_url}
                     alt={anime.title_english}
                     width={200}
                     height={300}
+                    objectFit="contain"
                     className="m-1"
                   />
                   {/* might consider making the image next to the synopsis */}
