@@ -5,7 +5,7 @@ import { useState } from "react";
 
 export default function AnimeId() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [episodes, setEpisodes] = useState([]);
   const [data, setData] = useState({} as any);
   // there's a filler boolean tag so we can add a switch for it
@@ -20,15 +20,24 @@ export default function AnimeId() {
       console.log(data);
       setData(data);
     })
+    .finally(() => {
+      setIsLoading(false);
+    })
     .catch((error) => {
       console.error("Error fetching data: ", error);
     });
 
   return (
     <div>
-      <h1>animeId: {animeId}</h1>
-      {/* successfully gets the ID, next up we'll display the episodes and style it a bit */}
-      <p>{JSON.stringify(data)}</p>
+      {isLoading ? (
+        <p>Loading...</p>
+      ) : (
+        <div>
+          <h1>animeId: {animeId}</h1>
+          {/* successfully gets the ID, next up we'll display the episodes and style it a bit */}
+          <p>{JSON.stringify(data)}</p>
+        </div>
+      )}
     </div>
   );
 }
