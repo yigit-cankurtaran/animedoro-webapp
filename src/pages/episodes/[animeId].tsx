@@ -12,21 +12,23 @@ export default function AnimeId() {
   const { animeId } = router.query;
   // fetch episodes from the API
   useEffect(() => {
-    fetch(`https://api.jikan.moe/v4/anime/${animeId}/episodes`)
-      .then((response) => {
-        if (response.ok) return response.json();
-        else throw new Error("Failed to fetch");
-      })
-      .then((data) => {
-        console.log(data);
-        setData(data);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching data: ", error);
-      });
+    if (typeof window !== "undefined" && animeId) {
+      fetch(`https://api.jikan.moe/v4/anime/${animeId}/episodes`)
+        .then((response) => {
+          if (response.ok) return response.json();
+          else throw new Error("Failed to fetch");
+        })
+        .then((data) => {
+          console.log(data);
+          setData(data);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching data: ", error);
+        });
+    }
   }, [animeId]);
 
   return (
