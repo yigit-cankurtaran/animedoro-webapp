@@ -35,7 +35,9 @@ export default function AnimeId() {
     <p>Loading...</p>
   ) : (
     data?.data?.length > 0 && (
-      <div className="bg-slate-500 text-white min-h-full w-full h-full">
+      <div className="grid grid-cols-4 bg-slate-500 text-white min-h-full w-full h-full">
+        {/* 4 column grid */}
+        {/* make sure that it has less or more depending on screen size */}
         {data.data.map((episode: any) => (
           <div
             key={episode.mal_id}
