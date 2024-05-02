@@ -65,7 +65,7 @@ export default function Search() {
         ) : (
           data?.data?.length > 0 && (
             // checks if data is not null and if there are any results
-            <div>
+            <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-2">
               {data?.data.map((anime: any) => (
                 // this maps out every anime in the data
                 // maybe display the search results in a bento box?
