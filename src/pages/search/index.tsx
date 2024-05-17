@@ -61,19 +61,17 @@ export default function Search() {
           value="Submit"
         />
         {isLoading ? (
-          <p>Loading...</p>
+          <div className="flex flex-col justify-center items-center">
+            <Skeleton count={5} />
+          </div>
         ) : (
           data?.data?.length > 0 && (
             // checks if data is not null and if there are any results
-            <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-2">
+            <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-2 lg:grid-rows-2">
               {data?.data.map((anime: any) => (
                 // this maps out every anime in the data
-                // maybe display the search results in a bento box?
                 <div
                   key={anime.mal_id}
-                  // we might be able to use this to link to the anime page
-                  // we have to use this to make sure that the key is unique
-                  // how can we pass the data to the anime page?
                   className="flex text-balance text-justify flex-col justify-center items-center m-10 bg-slate-800 p-5 rounded-3xl"
                 >
                   <Link
@@ -86,7 +84,6 @@ export default function Search() {
                   </Link>
                   <p className="m-1">{anime.title_japanese}</p>
                   {/* we can use these 2 to link */}
-                  {/* we'll need to create a dynamic episodes page probably */}
                   <p className="m-1 text-center">{anime.synopsis}</p>
                   <Image
                     src={anime.images.jpg.image_url}
@@ -96,7 +93,6 @@ export default function Search() {
                     objectFit="contain"
                     className="m-1"
                   />
-                  {/* might consider making the image next to the synopsis */}
                 </div>
               ))}
             </div>
