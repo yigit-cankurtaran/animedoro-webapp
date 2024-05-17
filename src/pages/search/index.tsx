@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
 export default function Search() {
   const [isLoading, setIsLoading] = useState(false);
@@ -12,6 +13,8 @@ export default function Search() {
     const formData = new FormData(event.target as HTMLFormElement);
     // we need this for the type to be correct
     const animeName = formData.get("animeName");
+
+    setIsLoading(true);
 
     fetch(`https://api.jikan.moe/v4/anime?q=${animeName}`)
       // search endpoint
@@ -60,44 +63,46 @@ export default function Search() {
           type="submit"
           value="Submit"
         />
-        {isLoading ? (
-          <div className="flex flex-col justify-center items-center">
-            <Skeleton count={5} />
-          </div>
-        ) : (
-          data?.data?.length > 0 && (
-            // checks if data is not null and if there are any results
-            <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-2 lg:grid-rows-2">
-              {data?.data.map((anime: any) => (
-                // this maps out every anime in the data
-                <div
-                  key={anime.mal_id}
-                  className="flex text-balance text-justify flex-col justify-center items-center m-10 bg-slate-800 p-5 rounded-3xl"
-                >
-                  <Link
-                    className="text-bold text-2xl text-blue-300 m-1"
-                    href={`/episodes/${anime.mal_id}`}
-                    // we are linking to a specific anime page
-                    // dynamic routing
+        <div>
+          {isLoading ? (
+            <p>
+              <Skeleton containerClassName="flex-1" count={5} />
+            </p>
+          ) : (
+            data?.data?.length > 0 && (
+              // checks if data is not null and if there are any results
+              <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-2 lg:grid-rows-2">
+                {data?.data.map((anime: any) => (
+                  // this maps out every anime in the data
+                  <div
+                    key={anime.mal_id}
+                    className="flex text-balance text-justify flex-col justify-center items-center m-10 bg-slate-800 p-5 rounded-3xl"
                   >
-                    {anime.title_english}
-                  </Link>
-                  <p className="m-1">{anime.title_japanese}</p>
-                  {/* we can use these 2 to link */}
-                  <p className="m-1 text-center">{anime.synopsis}</p>
-                  <Image
-                    src={anime.images.jpg.image_url}
-                    alt={anime.title_english}
-                    width={200}
-                    height={300}
-                    objectFit="contain"
-                    className="m-1"
-                  />
-                </div>
-              ))}
-            </div>
-          )
-        )}
+                    <Link
+                      className="text-bold text-2xl text-blue-300 m-1"
+                      href={`/episodes/${anime.mal_id}`}
+                      // we are linking to a specific anime page
+                      // dynamic routing
+                    >
+                      {anime.title_english}
+                    </Link>
+                    <p className="m-1">{anime.title_japanese}</p>
+                    {/* we can use these 2 to link */}
+                    <p className="m-1 text-center">{anime.synopsis}</p>
+                    <Image
+                      src={anime.images.jpg.image_url}
+                      alt={anime.title_english}
+                      width={200}
+                      height={300}
+                      objectFit="contain"
+                      className="m-1"
+                    />
+                  </div>
+                ))}
+              </div>
+            )
+          )}
+        </div>
       </form>
     </div>
   );
