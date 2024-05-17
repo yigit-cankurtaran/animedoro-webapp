@@ -3,10 +3,15 @@ import Link from "next/link";
 import { useState } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import Anime from "@/constants/Anime";
+
+interface Data {
+  data: Anime[];
+}
 
 export default function Search() {
   const [isLoading, setIsLoading] = useState(false);
-  const [data, setData] = useState({});
+  const [data, setData] = useState<Data | null>(null);
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     // prevents the page from reloading
@@ -28,7 +33,7 @@ export default function Search() {
       })
       .catch((error) => {
         console.error("Error fetching data: ", error);
-        setData({});
+        setData(null);
         setIsLoading(false);
       })
       .finally(() => {
@@ -69,8 +74,9 @@ export default function Search() {
               <Skeleton containerClassName="flex-1" count={5} />
             </p>
           ) : (
-            data?.data?.length > 0 && (
-              // checks if data is not null and if there are any results
+            data?.data?.length ??
+            (0 > 0 && (
+              // checks if data is not nullu and if there are any results
               <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-2 lg:grid-rows-2">
                 {data?.data.map((anime: any) => (
                   // this maps out every anime in the data
@@ -100,7 +106,7 @@ export default function Search() {
                   </div>
                 ))}
               </div>
-            )
+            ))
           )}
         </div>
       </form>

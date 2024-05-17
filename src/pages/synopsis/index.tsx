@@ -26,7 +26,9 @@ export default function Synopsis() {
 
   return (
     <>
-      <Link href="/">Home</Link>
+      <Link className="text-blue-500" href="/">
+        Home
+      </Link>
       <h1>
         {isLoading
           ? "Loading..."
