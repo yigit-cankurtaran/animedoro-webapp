@@ -64,51 +64,45 @@ export default function Search() {
           type="submit"
           value="Submit"
         />
-        <div>
-          {isLoading ? (
-            <p>
-              <Skeleton containerClassName="flex-1" count={5} />
-            </p>
-          ) : (
-            data?.data?.length ??
-            (0 > 0 && (
-              // checks if data is not nullu and if there are any results
-              <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-2 lg:grid-rows-2">
-                {data?.data.map((anime: any) => (
-                  // this maps out every anime in the data
-                  <div
-                    key={anime.mal_id}
-                    className="flex text-balance text-justify flex-col justify-center items-center m-10 bg-slate-800 p-5 rounded-3xl"
-                  >
-                    <Link
-                      className="text-bold text-2xl text-blue-300 m-1"
-                      href={`/episodes/${anime.mal_id}`}
-                      // we are linking to a specific anime page
-                      // dynamic routing
-                    >
-                      {anime.title_english}
-                    </Link>
-                    <p className="m-1">{anime.title_japanese}</p>
-                    {/* we can use these 2 to link */}
-                    <p className="m-1 text-center">{anime.synopsis}</p>
-                    <Image
-                      src={anime.images.jpg.image_url}
-                      alt={anime.title_english}
-                      width={200}
-                      height={300}
-                      objectFit="contain"
-                      className="m-1"
-                    />
-                  </div>
-                ))}
+        {isLoading ? (
+          <p>
+            <Skeleton containerClassName="flex-1" count={5} />
+          </p>
+        ) : (data?.data?.length ?? 0) > 0 ? ( // Check if data array has items
+          <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-2 lg:grid-rows-2">
+            {data?.data.map((anime: any) => (
+              <div
+                key={anime.mal_id}
+                className="flex text-balance text-justify flex-col justify-center items-center m-10 bg-slate-800 p-5 rounded-3xl"
+              >
+                {/* for the episodes */}
+                <Link
+                  className="text-bold text-2xl text-blue-300 m-1"
+                  href={`/episodes/${anime.mal_id}`}
+                >
+                  {anime.title_english}
+                </Link>
+                <p className="m-1">{anime.title_japanese}</p>
+                {/* authenticity */}
+                <p className="m-1 text-center">{anime.synopsis}</p>
+                {/* in case people want to check */}
+                <Image
+                  src={anime.images.jpg.image_url}
+                  alt={anime.title_english}
+                  width={200}
+                  height={300}
+                  objectFit="contain"
+                  className="m-1"
+                />
               </div>
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <p>No data found</p> // Display this if there are no items
+          // this comes up by default but i'll fix it later
+          // TODO: add some conditionals to make it look better
+        )}
       </form>
     </div>
   );
 }
-
-// TODO: the returns of this page changed from the API side
-// look into it and fix it.
