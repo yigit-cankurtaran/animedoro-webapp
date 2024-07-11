@@ -47,6 +47,7 @@ export default function Search() {
       <form
         className="flex flex-col justify-center items-center"
         onSubmit={onSubmit}
+        id="searchForm"
       >
         <label
           className="flex flex-col justify-center items-center"
@@ -65,9 +66,8 @@ export default function Search() {
           value="Submit"
         />
         {isLoading ? (
-          <p>
-            <Skeleton containerClassName="flex-1" count={5} />
-          </p>
+          // this isn't doing anything for some reason
+          <Skeleton count={5} />
         ) : (data?.data?.length ?? 0) > 0 ? ( // Check if data array has items
           <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-2 lg:grid-rows-2">
             {data?.data.map((anime: any) => (

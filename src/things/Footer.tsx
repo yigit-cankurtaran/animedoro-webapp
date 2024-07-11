@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="bg-slate-500 text-white p-4 text-center">
+    <footer className="text-white p-4 text-center">
       Made by{" "}
       <a
         className="text-blue-400 hover:text-blue-700"
