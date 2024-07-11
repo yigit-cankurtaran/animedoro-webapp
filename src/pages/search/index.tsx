@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import Skeleton from "react-loading-skeleton";
+// this is kind of a garbage library
 import "react-loading-skeleton/dist/skeleton.css";
 import Anime from "@/constants/Anime";
 
@@ -42,12 +43,7 @@ export default function Search() {
   }
 
   return (
-    <div className="h-full w-full bg-slate-500 min-h-screen text-white">
-      <div className="flex flex-col justify-center items-center mb-3">
-        <Link className="text-blue-300 font-extrabold text-xl" href="/">
-          Home
-        </Link>
-      </div>
+    <div className="w-full bg-slate-500 text-white">
       <form
         className="flex flex-col justify-center items-center"
         onSubmit={onSubmit}
@@ -113,3 +109,6 @@ export default function Search() {
     </div>
   );
 }
+
+// TODO: the returns of this page changed from the API side
+// look into it and fix it.

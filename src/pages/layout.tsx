@@ -1,4 +1,6 @@
 import React from "react";
+import Footer from "@/things/Footer";
+import Header from "@/things/Header";
 
 interface Props {
   children: React.ReactNode;
@@ -6,9 +8,12 @@ interface Props {
 
 const RootLayout: React.FC<Props> = ({ children }) => {
   return (
-    <div className="bg-slate-500 min-h-screen min-w-screen h-full w-full text-black">
-      {/* using body here was bugged. */}
-      {children}
+    <div className="flex flex-col justify-between bg-slate-500 min-h-screen h-full w-full text-black">
+      <Header />
+      <main className="flex-grow flex items-center justify-center">
+        {children}
+      </main>
+      <Footer />
     </div>
   );
 };

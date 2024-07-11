@@ -10,8 +10,6 @@ function MyApp({
   Component: React.ElementType;
   pageProps: any;
 }) {
-  // these show errors but we can fix later
-  // it works anyway
   return (
     <RootLayout>
       <Component {...pageProps} />

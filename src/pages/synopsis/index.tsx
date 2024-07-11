@@ -11,7 +11,6 @@ export default function Synopsis() {
       // gets data from the Jikan API
       .then((response) => response.json())
       // the above line converts the response to JSON
-      // .then((data) => setData(data));
       .then((data) => {
         setData(data);
         setSynopsis(data.data[0].synopsis);
@@ -22,13 +21,10 @@ export default function Synopsis() {
         setIsLoading(false);
         // when we get the data, we set isLoading to false
       });
-  }, []);
+  }, [isLoading]);
 
   return (
     <>
-      <Link className="text-blue-500" href="/">
-        Home
-      </Link>
       <h1>
         {isLoading
           ? "Loading..."
