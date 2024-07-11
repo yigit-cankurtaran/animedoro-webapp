@@ -43,7 +43,7 @@ export default function Search() {
   }
 
   return (
-    <div className="w-full bg-slate-500 text-white">
+    <div className="w-full text-white">
       <form
         className="flex flex-col justify-center items-center"
         onSubmit={onSubmit}
@@ -67,6 +67,7 @@ export default function Search() {
         />
         {isLoading ? (
           // this isn't doing anything for some reason
+          // TODO: fix this
           <Skeleton count={5} />
         ) : (data?.data?.length ?? 0) > 0 ? ( // Check if data array has items
           <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-2 lg:grid-rows-2">
@@ -80,9 +81,13 @@ export default function Search() {
                   className="text-bold text-2xl text-blue-300 m-1"
                   href={`/episodes/${anime.mal_id}`}
                 >
-                  {anime.title_english}
+                  {anime.title_english
+                    ? anime.title_english
+                    : anime.title_japanese}
                 </Link>
-                <p className="m-1">{anime.title_japanese}</p>
+                {!anime.title_english && (
+                  <p className="m-1">{anime.title_japanese}</p>
+                )}
                 {/* authenticity */}
                 <p className="m-1 text-center">{anime.synopsis}</p>
                 {/* in case people want to check */}
