@@ -72,7 +72,7 @@ export default function Search() {
           </div>
         ) : (data?.data?.length ?? 0) > 0 ? ( // Check if data array has items
           <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-2 lg:grid-rows-2">
-            {data?.data.map((anime: any) => (
+            {data?.data.map((anime: Anime) => (
               <div
                 key={anime.mal_id}
                 className="flex text-balance text-justify flex-col justify-center items-center m-5 bg-slate-900 p-3 rounded-3xl"

@@ -20,6 +20,7 @@ export default function AnimeId() {
     if (typeof window !== "undefined" && animeId) {
       fetch(`https://api.jikan.moe/v4/anime/${animeId}/episodes`)
         // this only gets the first 100 episodes.
+        // TODO: find a way to get all the episodes.
         .then((response) => {
           if (response.ok) return response.json();
           else throw new Error("Failed to fetch");
@@ -42,12 +43,17 @@ export default function AnimeId() {
     <p>Loading...</p>
   ) : (
     (data?.data?.length ?? 0) > 0 && (
-      // TODO: i don't understand the above line
+      // optional chaining
+      // in case of a null or undefined value, it will return undefined
+      // the parentheses means that if the left side is undefined, it will return the right side
+      // setting the default value to 0
+      // this line checks if data.data is not null or undefined and if it has a length greater than 0
       <div className="grid grid-cols-2 sm:grid-cols-4 text-wrap min-h-full w-full h-full">
         {/* 4 column grid */}
         {/* make sure that it has less or more depending on screen size */}
-        {data?.data.map((episode: any) => (
-          // why the ? here? check later
+        {data?.data.map((episode: Episode) => (
+          // mapping through the episodes
+          // if data or data.data is null or undefined, it will not run
           <div
             key={episode.mal_id}
             className="flex text-balance text-center flex-col justify-center items-center m-10 bg-slate-900 p-5 rounded-3xl"
