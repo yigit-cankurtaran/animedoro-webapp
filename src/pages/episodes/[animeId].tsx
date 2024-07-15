@@ -20,6 +20,7 @@ export default function AnimeId() {
         })
         .then((data) => {
           console.log(data);
+          console.log("the first episode is: ", data.data[0]);
           setData(data);
         })
         .finally(() => {
@@ -35,25 +36,34 @@ export default function AnimeId() {
     <p>Loading...</p>
   ) : (
     data?.data?.length > 0 && (
-      <div className="grid grid-cols-4 bg-slate-500 text-white min-h-full w-full h-full">
+      <div className="grid grid-cols-2 sm:grid-cols-4 text-wrap text-white min-h-full w-full h-full">
         {/* 4 column grid */}
         {/* make sure that it has less or more depending on screen size */}
         {data.data.map((episode: any) => (
           <div
             key={episode.mal_id}
-            className="flex text-balance text-center flex-col justify-center items-center m-10 bg-slate-800 p-5 rounded-3xl"
+            className="flex text-balance text-center flex-col justify-center items-center m-10 bg-slate-900 p-5 rounded-3xl"
           >
             {/* might need episode order too */}
             <p>{episode.title}</p>
-            <p>{episode.aired}</p>
-            <p>{episode.filler ? "Filler" : "Not Filler"}</p>
-            <p>{episode.recap ? "Recap" : "Not Recap"}</p>
-            {/* we can use this to display stuff for longer anime */}
+            <p>{removeTandAfter(episode.aired)}</p>
+            {/* air date */}
+            {/* this has something with T and some numbers, looks bad, we can filter that later on */}
+            <p>{episode.filler ? "Filler" : ""}</p>
+            <p>{episode.recap ? "Recap" : ""}</p>
+            {/* displaying filler or recap status. if it's not it's just this */}
             <p>{episode.synopsis}</p>
             {/* there is no synopsis or an episode specific picture. hmmm */}
+            {/* look into this */}
+            <p>{episode.mal_id}</p>
+            {/* which episode it is */}
           </div>
         ))}
       </div>
     )
   );
+}
+
+function removeTandAfter(date: string) {
+  return date.split("T")[0];
 }

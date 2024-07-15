@@ -78,7 +78,7 @@ export default function Search() {
               >
                 {/* for the episodes */}
                 <Link
-                  className="text-bold text-2xl text-blue-300 m-1"
+                  className="text-bold text-pretty text-2xl text-blue-300 m-1"
                   href={`/episodes/${anime.mal_id}`}
                 >
                   {anime.title_english
