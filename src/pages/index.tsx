@@ -5,9 +5,9 @@ import Link from "next/link";
 export default function Home() {
   return (
     <div className="flex flex-grow flex-col items-center justify-center">
-      <Link href="/synopsis" className="text-blue-400">
+      {/* <Link href="/synopsis" className="text-blue-400">
         Synopsis
-      </Link>
+      </Link> */}
       <Link href="/search" className="text-blue-400">
         Search
       </Link>

@@ -60,13 +60,13 @@ export default function Search() {
           />
         </label>
         <input
-          className="bg-slate-800 rounded-lg p-2 m-2 text-white text-center"
+          className="rounded-lg p-2 m-2 text-blue-300 text-center"
           type="submit"
           value="Submit"
         />
         {isLoading ? (
           // this displays but there's no animation
-          <div className="flex justify-center items-center p-10">
+          <div>
             <ClipLoader color="#ffffff" loading={isLoading} size={150} />
           </div>
         ) : (data?.data?.length ?? 0) > 0 ? ( // Check if data array has items
@@ -74,7 +74,7 @@ export default function Search() {
             {data?.data.map((anime: any) => (
               <div
                 key={anime.mal_id}
-                className="flex text-balance text-justify flex-col justify-center items-center m-10 bg-slate-800 p-5 rounded-3xl"
+                className="flex text-balance text-justify flex-col justify-center items-center m-5 bg-slate-900 p-3 rounded-3xl"
               >
                 {/* for the episodes */}
                 <Link
@@ -91,6 +91,7 @@ export default function Search() {
                 {/* authenticity */}
                 <p className="m-1 text-center">{anime.synopsis}</p>
                 {/* in case people want to check */}
+                {/* this is gonna need some wrapping */}
                 <Image
                   src={anime.images.jpg.image_url}
                   alt={anime.title_english}

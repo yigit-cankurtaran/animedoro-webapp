@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import Link from "next/link";
 
 export default function Synopsis() {
   const [data, setData] = useState([]);
@@ -25,7 +24,7 @@ export default function Synopsis() {
 
   return (
     <>
-      <h1>
+      <h1 className="text-white">
         {isLoading
           ? "Loading..."
           : data && <div>{JSON.parse(JSON.stringify(synopsis))}</div>}
