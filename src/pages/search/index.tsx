@@ -29,6 +29,7 @@ export default function Search() {
       })
       .then((data) => {
         console.log(data);
+        console.log("the first anime is: ", data.data[0]);
         setData(data);
       })
       .catch((error) => {
@@ -94,10 +95,14 @@ export default function Search() {
                 {/* this is gonna need some wrapping */}
                 <Image
                   src={anime.images.jpg.image_url}
-                  alt={anime.title_english}
+                  alt={
+                    anime.title_english
+                      ? anime.title_english
+                      : anime.title_japanese
+                  }
                   width={200}
                   height={300}
-                  objectFit="contain"
+                  style={{ objectFit: "contain" }}
                   className="m-1"
                 />
               </div>
