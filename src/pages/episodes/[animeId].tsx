@@ -2,18 +2,24 @@
 // any anime id will be passed to this page
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
+import Episode from "@/constants/Episode";
+
+interface Data {
+  data: Episode[];
+}
 
 export default function AnimeId() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   // const [episodes, setEpisodes] = useState([]);
-  const [data, setData] = useState({} as any);
+  const [data, setData] = useState<Data | null>(null);
   // there's a filler boolean tag so we can add a switch for it
   const { animeId } = router.query;
   // fetch episodes from the API
   useEffect(() => {
     if (typeof window !== "undefined" && animeId) {
       fetch(`https://api.jikan.moe/v4/anime/${animeId}/episodes`)
+        // this only gets the first 100 episodes.
         .then((response) => {
           if (response.ok) return response.json();
           else throw new Error("Failed to fetch");
@@ -35,11 +41,13 @@ export default function AnimeId() {
   return isLoading ? (
     <p>Loading...</p>
   ) : (
-    data?.data?.length > 0 && (
+    (data?.data?.length ?? 0) > 0 && (
+      // TODO: i don't understand the above line
       <div className="grid grid-cols-2 sm:grid-cols-4 text-wrap min-h-full w-full h-full">
         {/* 4 column grid */}
         {/* make sure that it has less or more depending on screen size */}
-        {data.data.map((episode: any) => (
+        {data?.data.map((episode: any) => (
+          // why the ? here? check later
           <div
             key={episode.mal_id}
             className="flex text-balance text-center flex-col justify-center items-center m-10 bg-slate-900 p-5 rounded-3xl"

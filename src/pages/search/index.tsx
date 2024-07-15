@@ -79,7 +79,7 @@ export default function Search() {
               >
                 {/* for the episodes */}
                 <Link
-                  className="text-bold text-pretty text-2xl text-blue-300 m-1"
+                  className="text-bold text-pretty text-start text-2xl text-blue-300 m-1"
                   href={`/episodes/${anime.mal_id}`}
                 >
                   {anime.title_english
@@ -90,7 +90,7 @@ export default function Search() {
                   <p className="m-1">{anime.title_japanese}</p>
                 )}
                 {/* authenticity */}
-                <p className="m-1 text-center">{anime.synopsis}</p>
+                <p className="m-1 text-start">{anime.synopsis}</p>
                 {/* in case people want to check */}
                 {/* this is gonna need some wrapping */}
                 <Image
