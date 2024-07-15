@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import Skeleton from "react-loading-skeleton";
-import "react-loading-skeleton/dist/skeleton.css";
+import { useState, CSSProperties } from "react";
+import { ClipLoader } from "react-spinners";
+
 import Anime from "@/constants/Anime";
 
 interface Data {
@@ -67,7 +67,7 @@ export default function Search() {
         {isLoading ? (
           // this displays but there's no animation
           <div className="flex justify-center items-center p-10">
-            <Skeleton height={20} width={200} count={3} enableAnimation />
+            <ClipLoader color="#ffffff" loading={isLoading} size={150} />
           </div>
         ) : (data?.data?.length ?? 0) > 0 ? ( // Check if data array has items
           <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-2 lg:grid-rows-2">
