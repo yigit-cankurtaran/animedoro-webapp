@@ -8,7 +8,7 @@ interface Props {
 
 const RootLayout: React.FC<Props> = ({ children }) => {
   return (
-    <div className="flex flex-col justify-between bg-slate-800 min-h-screen h-full w-full text-black">
+    <div className="flex flex-col justify-between bg-slate-800 min-h-screen h-full w-full text-white">
       <Header />
       <main className="flex-grow flex items-center justify-center">
         {children}

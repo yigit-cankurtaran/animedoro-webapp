@@ -14,6 +14,9 @@ export default function Home() {
       {/* <Link href="/episodes" className="text-blue-500">
         Episodes
       </Link> */}
+      <Link href="/settings" className="text-blue-400">
+        Settings
+      </Link>
     </div>
   );
 }

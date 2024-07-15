@@ -36,7 +36,7 @@ export default function AnimeId() {
     <p>Loading...</p>
   ) : (
     data?.data?.length > 0 && (
-      <div className="grid grid-cols-2 sm:grid-cols-4 text-wrap text-white min-h-full w-full h-full">
+      <div className="grid grid-cols-2 sm:grid-cols-4 text-wrap min-h-full w-full h-full">
         {/* 4 column grid */}
         {/* make sure that it has less or more depending on screen size */}
         {data.data.map((episode: any) => (

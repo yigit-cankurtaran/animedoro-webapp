@@ -43,7 +43,7 @@ export default function Search() {
   }
 
   return (
-    <div className="w-full text-white">
+    <div className="w-full">
       <form
         className="flex flex-col justify-center items-center"
         onSubmit={onSubmit}

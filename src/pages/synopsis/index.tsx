@@ -24,7 +24,7 @@ export default function Synopsis() {
 
   return (
     <>
-      <h1 className="text-white">
+      <h1>
         {isLoading
           ? "Loading..."
           : data && <div>{JSON.parse(JSON.stringify(synopsis))}</div>}
