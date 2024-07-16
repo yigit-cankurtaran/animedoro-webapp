@@ -15,33 +15,70 @@ export default function AnimeId() {
   const [data, setData] = useState<Data | null>(null);
   // there's a filler boolean tag so we can add a switch for it
   const { animeId } = router.query;
+
   // fetch episodes from the API
   useEffect(() => {
-    if (typeof window !== "undefined" && animeId) {
-      fetch(`https://api.jikan.moe/v4/anime/${animeId}/episodes`)
-        // this only gets the first 100 episodes.
-        // TODO: find a way to get all the episodes.
-        .then((response) => {
-          if (response.ok) return response.json();
-          else throw new Error("Failed to fetch");
-        })
-        .then((data) => {
-          console.log(data);
-          console.log("the first episode is: ", data.data[0]);
-          setData(data);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        })
-        .catch((error) => {
-          console.error("Error fetching data: ", error);
-        });
-    }
+    const fetchEpisodes = async () => {
+      if (typeof window !== "undefined" && animeId) {
+        // checking this only runs in the browser
+        // and if there's an animeId
+        // the 2nd check might be redundant because we click anime to get here
+        let allEpisodes: Episode[] = [];
+        // this is an array of Episodes
+        // empty, we will fill it with all the episodes
+        let page = 1;
+        let morePagesAvailable = true;
+
+        setIsLoading(true);
+
+        while (morePagesAvailable) {
+          // while there are more pages available
+          try {
+            const response = await fetch(
+              `https://api.jikan.moe/v4/anime/${animeId}/episodes?page=${page}`
+            );
+            if (!response.ok) throw new Error("Failed to fetch");
+            // get the data
+            // error handle if it's not ok
+
+            const { data, pagination } = await response.json();
+            // parse the data and pagination from the response
+            // data will hold the actual data we get
+            // pagination will hold the pagination data
+            allEpisodes = allEpisodes.concat(data);
+            // the data we get is an array of episodes
+            // we add that to the allEpisodes array
+            // concat combines the data we get with the existing data
+
+            morePagesAvailable = pagination.has_next_page;
+            // pagination has a has_next_page boolean
+            // if there is a next page, it will be true
+            // if there is no next page, it will be false
+            // if it's false the loop will stop
+
+            page++;
+            // we go to the next page
+          } catch (error) {
+            console.error("Error fetching data: ", error);
+            morePagesAvailable = false;
+            // stopping the loop in case of an error
+          }
+        }
+        setData({ data: allEpisodes });
+        setIsLoading(false);
+      }
+    };
+
+    fetchEpisodes();
+    // TODO: this works but we sometimes get a 429 error
+    // rate limit, look into this later on, maybe add a delay
+    // we get 3 requests per second, 60 requests per minute
   }, [animeId]);
 
   return isLoading ? (
     <p>Loading...</p>
   ) : (
+    // TODO: change above with the loading spinner later on
     (data?.data?.length ?? 0) > 0 && (
       // optional chaining
       // in case of a null or undefined value, it will return undefined
