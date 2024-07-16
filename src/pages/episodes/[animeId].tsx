@@ -11,7 +11,6 @@ interface Data {
 export default function AnimeId() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  // const [episodes, setEpisodes] = useState([]);
   const [data, setData] = useState<Data | null>(null);
   // there's a filler boolean tag so we can add a switch for it
   const { animeId } = router.query;
@@ -45,6 +44,7 @@ export default function AnimeId() {
             // parse the data and pagination from the response
             // data will hold the actual data we get
             // pagination will hold the pagination data
+
             allEpisodes = allEpisodes.concat(data);
             // the data we get is an array of episodes
             // we add that to the allEpisodes array
@@ -79,6 +79,9 @@ export default function AnimeId() {
     <p>Loading...</p>
   ) : (
     // TODO: change above with the loading spinner later on
+    // this will also help when we add the delay for the rate limit
+    // we will also need to cache the data so it doesn't fetch it every time
+    // hmmmm
     (data?.data?.length ?? 0) > 0 && (
       // optional chaining
       // in case of a null or undefined value, it will return undefined
@@ -98,10 +101,9 @@ export default function AnimeId() {
             <p>{episode.title}</p>
             <p>{removeTandAfter(episode.aired)}</p>
             {/* air date */}
-            {/* this has something with T and some numbers, looks bad, we can filter that later on */}
             <p>{episode.filler ? "Filler" : ""}</p>
             <p>{episode.recap ? "Recap" : ""}</p>
-            {/* displaying filler or recap status. if it's not it's just this */}
+            {/* displaying filler or recap status. if it's not it's just empty */}
             <p>{episode.synopsis}</p>
             {/* there is no synopsis or an episode specific picture. hmmm */}
             {/* look into this */}

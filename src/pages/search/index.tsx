@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { useState, CSSProperties } from "react";
+import { useState } from "react";
 import { ClipLoader } from "react-spinners";
 
 import Anime from "@/constants/Anime";
