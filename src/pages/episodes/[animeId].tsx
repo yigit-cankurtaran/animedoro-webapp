@@ -3,6 +3,7 @@
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import Episode from "@/constants/Episode";
+import { ClipLoader } from "react-spinners";
 
 interface Data {
   data: Episode[];
@@ -17,6 +18,10 @@ export default function AnimeId() {
 
   // fetch episodes from the API
   useEffect(() => {
+    const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+    // a delay function
+    // resolves the promise after a delay we pass in
+
     const fetchEpisodes = async () => {
       if (typeof window !== "undefined" && animeId) {
         // checking this only runs in the browser
@@ -58,11 +63,16 @@ export default function AnimeId() {
 
             page++;
             // we go to the next page
+
+            await delay(500);
+            // 500 ms delay
           } catch (error) {
             console.error("Error fetching data: ", error);
             morePagesAvailable = false;
             // stopping the loop in case of an error
           }
+          // TODO: we will also need to cache the data so it doesn't fetch it every time
+          // hmmmm
         }
         setData({ data: allEpisodes });
         setIsLoading(false);
@@ -70,18 +80,11 @@ export default function AnimeId() {
     };
 
     fetchEpisodes();
-    // TODO: this works but we sometimes get a 429 error
-    // rate limit, look into this later on, maybe add a delay
-    // we get 3 requests per second, 60 requests per minute
   }, [animeId]);
 
   return isLoading ? (
-    <p>Loading...</p>
+    <ClipLoader color="#ffffff" loading={isLoading} size={150} />
   ) : (
-    // TODO: change above with the loading spinner later on
-    // this will also help when we add the delay for the rate limit
-    // we will also need to cache the data so it doesn't fetch it every time
-    // hmmmm
     (data?.data?.length ?? 0) > 0 && (
       // optional chaining
       // in case of a null or undefined value, it will return undefined
