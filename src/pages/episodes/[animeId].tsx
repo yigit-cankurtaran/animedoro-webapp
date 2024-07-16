@@ -15,6 +15,8 @@ async function fetchEpisodes(animeId: string, page: number) {
   console.log(`Fetched page ${page}: `, data);
   console.log("Pagination:", pagination);
   return { data, pagination };
+  // i should've logged pagination and checked
+  // would've saved me a lot of time
 }
 
 export default function AnimeId() {
@@ -82,8 +84,12 @@ export default function AnimeId() {
   }, [hasNextPage, isFetchingNextPage]);
 
   if (isLoading)
-    return <ClipLoader color="#ffffff" loading={isLoading} size={150} />;
-  // TODO: will probably need to center these
+    return (
+      <div className="items-center justify-center">
+        <ClipLoader color="#ffffff" loading={isLoading} size={150} />;
+      </div>
+      // TODO: This isn't centered, check later
+    );
   if (isError)
     return (
       <span>
