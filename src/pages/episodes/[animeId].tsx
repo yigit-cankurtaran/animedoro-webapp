@@ -1,21 +1,19 @@
-// name in brackets because it's a dynamic route
-// any anime id will be passed to this page
 import { useRouter } from "next/router";
 import Episode from "@/constants/Episode";
 import { ClipLoader } from "react-spinners";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 
-async function fetchEpisodes(animeId: string | string[], page: number) {
+// Fetch episodes from the API
+async function fetchEpisodes(animeId: string, page: number) {
   const response = await fetch(
     `https://api.jikan.moe/v4/anime/${animeId}/episodes?page=${page}`
   );
-  // getting the episodes from the api
   if (!response.ok) throw new Error("Failed to fetch");
-  const { data, pagination } = await response.json();
-  // data and pagination are the two things we need
-  // data is the episodes
-  // pagination is the page number
+  const result = await response.json();
+  const { data, pagination } = result;
+  console.log(`Fetched page ${page}: `, data);
+  console.log("Pagination:", pagination);
   return { data, pagination };
 }
 
@@ -34,53 +32,59 @@ export default function AnimeId() {
   } = useInfiniteQuery<{
     data: Episode[];
     pagination: {
-      currentPage: number;
-      hasNextPage: boolean;
+      last_visible_page: number;
+      has_next_page: boolean;
     };
   }>({
-    // the key we are using to cache the data
     queryKey: ["episodes", animeId],
-    // the function that will be called to fetch the data
-    queryFn: ({ pageParam = 1 }) =>
-      animeId
-        ? fetchEpisodes(animeId as string, pageParam as number)
-        : Promise.reject(new Error("Anime ID is undefined")),
-    // the function that will be called to fetch the next page
-    // if it exists
-    getNextPageParam: (lastPage) => {
-      if (lastPage.pagination.hasNextPage)
-        return lastPage.pagination.currentPage + 1;
-      return undefined;
+    queryFn: async ({ pageParam = 1 }) => {
+      if (animeId) {
+        console.log(`Fetching page ${pageParam}`);
+        return fetchEpisodes(animeId as string, pageParam as number);
+      } else {
+        throw new Error("Anime ID is undefined");
+      }
+    },
+    getNextPageParam: (lastPage, pages) => {
+      console.log("lastPage:", lastPage);
+      const currentPage = pages.length;
+      const hasNextPage = lastPage?.pagination?.has_next_page;
+      const nextPage = hasNextPage ? currentPage + 1 : undefined;
+      console.log(`Current page: ${currentPage}, Next page: ${nextPage}`);
+      return nextPage;
     },
     initialPageParam: 1,
     enabled: !!animeId,
-    // ensures that the query is only enabled when the animeId is defined
   });
 
   const handleLoadMore = () => {
-    if (hasNextPage) fetchNextPage();
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+      console.log("Fetching next page...");
+    }
   };
 
+  // TODO: understand how this works
   useEffect(() => {
     const onScroll = () => {
       if (
-        window.innerHeight + document.documentElement.scrollTop ===
-        document.documentElement.offsetHeight
+        window.innerHeight + document.documentElement.scrollTop >=
+        document.documentElement.offsetHeight - 1
       ) {
         handleLoadMore();
-        console.log("loading more");
+        console.log("Scrolled to the bottom");
       }
     };
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
-  }, [hasNextPage, fetchNextPage]);
+  }, [hasNextPage, isFetchingNextPage]);
 
   if (isLoading)
     return <ClipLoader color="#ffffff" loading={isLoading} size={150} />;
   if (isError)
     return (
       <span>
-        Error: {error instanceof Error ? error.message : "An error occured"}
+        Error: {error instanceof Error ? error.message : "An error occurred"}
       </span>
     );
 
@@ -94,8 +98,9 @@ export default function AnimeId() {
             className="flex text-center flex-col justify-center items-center m-10 bg-slate-900 p-5 rounded-3xl"
           >
             <p>{episode.title}</p>
-            {/* Other episode details */}
             <p>{episode.mal_id}</p>
+            {/* this is fixed */}
+            {/* TODO: add the rest of the stuff tomorrow */}
           </div>
         ))}
       {isFetchingNextPage && (
