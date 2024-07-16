@@ -1,14 +1,10 @@
 // name in brackets because it's a dynamic route
 // any anime id will be passed to this page
 import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
 import Episode from "@/constants/Episode";
 import { ClipLoader } from "react-spinners";
-import { useQuery } from "@tanstack/react-query";
-
-interface Data {
-  data: Episode[];
-}
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 async function fetchEpisodes(animeId: string | string[], page: number) {
   const response = await fetch(
@@ -27,12 +23,57 @@ export default function AnimeId() {
   const router = useRouter();
   const { animeId } = router.query;
 
-  const { data, isLoading, isError, error } = useQuery({
+  const {
+    data,
+    isLoading,
+    isError,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    error,
+  } = useInfiniteQuery<{
+    data: Episode[];
+    pagination: {
+      currentPage: number;
+      hasNextPage: boolean;
+    };
+  }>({
     // the key we are using to cache the data
     queryKey: ["episodes", animeId],
     // the function that will be called to fetch the data
-    queryFn: () => fetchEpisodes(animeId as string, 1),
+    queryFn: ({ pageParam = 1 }) =>
+      animeId
+        ? fetchEpisodes(animeId as string, pageParam as number)
+        : Promise.reject(new Error("Anime ID is undefined")),
+    // the function that will be called to fetch the next page
+    // if it exists
+    getNextPageParam: (lastPage) => {
+      if (lastPage.pagination.hasNextPage)
+        return lastPage.pagination.currentPage + 1;
+      return undefined;
+    },
+    initialPageParam: 1,
+    enabled: !!animeId,
+    // ensures that the query is only enabled when the animeId is defined
   });
+
+  const handleLoadMore = () => {
+    if (hasNextPage) fetchNextPage();
+  };
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop ===
+        document.documentElement.offsetHeight
+      ) {
+        handleLoadMore();
+        console.log("loading more");
+      }
+    };
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [hasNextPage, fetchNextPage]);
 
   if (isLoading)
     return <ClipLoader color="#ffffff" loading={isLoading} size={150} />;
@@ -45,28 +86,21 @@ export default function AnimeId() {
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 text-wrap min-h-full w-full h-full">
-      {/* 4 column grid */}
-      {/* make sure that it has less or more depending on screen size */}
-      {data?.data.map((episode: Episode) => (
-        // mapping through the episodes
-        // if data or data.data is null or undefined, it will not run
-        <div
-          key={episode.mal_id}
-          className="flex text-balance text-center flex-col justify-center items-center m-10 bg-slate-900 p-5 rounded-3xl"
-        >
-          <p>{episode.title}</p>
-          <p>{removeTandAfter(episode.aired)}</p>
-          {/* air date */}
-          <p>{episode.filler ? "Filler" : ""}</p>
-          <p>{episode.recap ? "Recap" : ""}</p>
-          {/* displaying filler or recap status. if it's not it's just empty */}
-          <p>{episode.synopsis}</p>
-          {/* there is no synopsis or an episode specific picture. hmmm */}
-          {/* look into this */}
-          <p>{episode.mal_id}</p>
-          {/* which episode it is */}
-        </div>
-      ))}
+      {data?.pages
+        .flatMap((page) => page.data)
+        .map((episode: Episode) => (
+          <div
+            key={episode.mal_id}
+            className="flex text-center flex-col justify-center items-center m-10 bg-slate-900 p-5 rounded-3xl"
+          >
+            <p>{episode.title}</p>
+            {/* Other episode details */}
+            <p>{episode.mal_id}</p>
+          </div>
+        ))}
+      {isFetchingNextPage && (
+        <ClipLoader color="#ffffff" loading={true} size={150} />
+      )}
     </div>
   );
 }
