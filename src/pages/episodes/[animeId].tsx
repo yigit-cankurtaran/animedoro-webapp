@@ -32,6 +32,7 @@ export default function AnimeId() {
   } = useInfiniteQuery<{
     data: Episode[];
     pagination: {
+      // the issue was probably with the pagination
       last_visible_page: number;
       has_next_page: boolean;
     };
@@ -50,6 +51,7 @@ export default function AnimeId() {
       const currentPage = pages.length;
       const hasNextPage = lastPage?.pagination?.has_next_page;
       const nextPage = hasNextPage ? currentPage + 1 : undefined;
+      // the undefined here might be an issue later
       console.log(`Current page: ${currentPage}, Next page: ${nextPage}`);
       return nextPage;
     },
@@ -81,6 +83,7 @@ export default function AnimeId() {
 
   if (isLoading)
     return <ClipLoader color="#ffffff" loading={isLoading} size={150} />;
+  // TODO: will probably need to center these
   if (isError)
     return (
       <span>
@@ -99,8 +102,9 @@ export default function AnimeId() {
           >
             <p>{episode.title}</p>
             <p>{episode.mal_id}</p>
-            {/* this is fixed */}
-            {/* TODO: add the rest of the stuff tomorrow */}
+            <p>{removeTandAfter(episode.aired)}</p>
+            <p>{episode.filler ? "Filler" : ""}</p>
+            <p>{episode.recap ? "Recap" : ""}</p>
           </div>
         ))}
       {isFetchingNextPage && (
@@ -109,6 +113,8 @@ export default function AnimeId() {
     </div>
   );
 }
+
+// TODO: too many logs, check if we're doing unnecessary fetches
 
 function removeTandAfter(date: string) {
   return date.split("T")[0];
