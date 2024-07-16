@@ -58,7 +58,6 @@ export default function AnimeId() {
             key={episode.mal_id}
             className="flex text-balance text-center flex-col justify-center items-center m-10 bg-slate-900 p-5 rounded-3xl"
           >
-            {/* might need episode order too */}
             <p>{episode.title}</p>
             <p>{removeTandAfter(episode.aired)}</p>
             {/* air date */}

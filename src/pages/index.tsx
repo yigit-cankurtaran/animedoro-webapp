@@ -1,6 +1,4 @@
 import Link from "next/link";
-// TODO: make this get all the pages automatically
-// get folder names and add a / in front
 
 export default function Home() {
   return (

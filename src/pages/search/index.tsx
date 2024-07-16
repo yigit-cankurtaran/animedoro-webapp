@@ -12,6 +12,8 @@ interface Data {
 export default function Search() {
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<Data | null>(null);
+  const [searchPerformed, setSearchPerformed] = useState(false);
+
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     // prevents the page from reloading
@@ -20,6 +22,7 @@ export default function Search() {
     const animeName = formData.get("animeName");
 
     setIsLoading(true);
+    setSearchPerformed(true);
 
     fetch(`https://api.jikan.moe/v4/anime?q=${animeName}`)
       // search endpoint
@@ -66,7 +69,6 @@ export default function Search() {
           value="Submit"
         />
         {isLoading ? (
-          // this displays but there's no animation
           <div>
             <ClipLoader color="#ffffff" loading={isLoading} size={150} />
           </div>
@@ -109,9 +111,9 @@ export default function Search() {
             ))}
           </div>
         ) : (
-          <p>No data found</p> // Display this if there are no items
-          // this comes up by default but i'll fix it later
-          // TODO: add some conditionals to make it look better
+          // if it is empty and search happened display no data found
+          searchPerformed &&
+          (data?.data?.length ?? 0) === 0 && <p>No data found</p>
         )}
       </form>
     </div>
