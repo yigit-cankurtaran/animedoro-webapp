@@ -4,6 +4,8 @@ import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import Episode from "@/constants/Episode";
 import { ClipLoader } from "react-spinners";
+// import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+// TODO: implement this on App level
 
 interface Data {
   data: Episode[];
@@ -15,6 +17,18 @@ export default function AnimeId() {
   const [data, setData] = useState<Data | null>(null);
   // there's a filler boolean tag so we can add a switch for it
   const { animeId } = router.query;
+
+  // const queryClient = new QueryClient({
+  //   defaultOptions: {
+  //     queries: {
+  //       gcTime: 1000 * 60 * 5,
+  //       // 5 minutes
+  //       staleTime: 1000 * 60 * 1,
+  //       // 1 minute
+  //       // this is the time it will wait before it refetches the data
+  //     },
+  //   },
+  // });
 
   // fetch episodes from the API
   useEffect(() => {
