@@ -32,6 +32,8 @@ async function fetchEpisodes(animeId: string, page: number) {
 export default function AnimeId() {
   const router = useRouter();
   const { animeId } = router.query;
+  // thinking of returning to useEffect instead of the query
+  // too much work and i don't know anything about the library
 
   const {
     data,
@@ -47,6 +49,7 @@ export default function AnimeId() {
     // react-query handles its own state
   } = useInfiniteQuery<{
     data: Episode[];
+    // data is an array of episodes
     pagination: {
       // the issue was probably with the pagination
       last_visible_page: number;

@@ -2,16 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { ClipLoader } from "react-spinners";
-import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
 
 import Anime from "@/constants/Anime";
 
 interface Data {
   data: Anime[];
 }
-
-// TODO: use react-query instead of fetch
 
 export default function Search() {
   const [isLoading, setIsLoading] = useState(false);
