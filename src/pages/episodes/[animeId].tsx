@@ -3,7 +3,6 @@ import Episode from "@/constants/Episode";
 import { ClipLoader } from "react-spinners";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
-// TODO: understand how this works
 
 // Fetch episodes from the API
 async function fetchEpisodes(animeId: string, page: number) {
@@ -156,8 +155,10 @@ export default function AnimeId() {
           </div>
         ))}
       {isFetchingNextPage && (
-        <ClipLoader color="#ffffff" loading={true} size={150} />
-        // TODO: center this
+        <div className="justify-center items-center">
+          <ClipLoader color="#ffffff" loading={true} size={150} />
+          {/* TODO: center this. this isn't centered for some reason. */}
+        </div>
       )}
     </div>
   );
