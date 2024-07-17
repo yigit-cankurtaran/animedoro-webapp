@@ -49,13 +49,11 @@ export default function AnimeId() {
       }
     },
     getNextPageParam: (lastPage, pages) => {
-      console.log("lastPage:", lastPage);
-      const currentPage = pages.length;
-      const hasNextPage = lastPage?.pagination?.has_next_page;
-      const nextPage = hasNextPage ? currentPage + 1 : undefined;
-      // the undefined here might be an issue later
-      console.log(`Current page: ${currentPage}, Next page: ${nextPage}`);
-      return nextPage;
+      const nextPage = pages.length + 1;
+      if (lastPage.pagination.has_next_page) {
+        return nextPage;
+      }
+      return undefined;
     },
     initialPageParam: 1,
     enabled: !!animeId,
