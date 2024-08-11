@@ -7,6 +7,7 @@ import Anime from "@/constants/Anime";
 
 interface Data {
   data: Anime[];
+  // an array of Anime
 }
 
 export default function Search() {
@@ -92,7 +93,7 @@ export default function Search() {
                   <p className="m-1">{anime.title_japanese}</p>
                 )}
                 {/* authenticity */}
-                <p className="m-1 text-start">{anime.synopsis}</p>
+                <p className="m-1 text-center">{anime.synopsis}</p>
                 {/* in case people want to check */}
                 {/* this is gonna need some wrapping */}
                 <Image

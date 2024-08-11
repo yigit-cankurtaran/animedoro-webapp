@@ -10,4 +10,5 @@ interface Episode {
     url: string
 }
 
-export default Episode
+export default Episode;
+// i may need to add a finished variable for this
