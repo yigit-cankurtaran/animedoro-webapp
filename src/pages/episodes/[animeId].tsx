@@ -72,7 +72,13 @@ export default function AnimeId() {
             // stopping the loop in case of an error
           }
           // TODO: we will also need to cache the data so it doesn't fetch it every time
+          // we can just add it to local storage, that's p much all caching is
+          // we will also need to do this to do the checkbox thing anyway
           // hmmmm
+
+          // TODO: initial loading time is too long for stuff like one piece
+          // we can just add a scroll listener and fetch the other pages on that
+          // or a button, or a page system or something
         }
         setData({ data: allEpisodes });
         setIsLoading(false);
