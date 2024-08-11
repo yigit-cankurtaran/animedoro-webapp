@@ -1,169 +1,121 @@
+// name in brackets because it's a dynamic route
+// any anime id will be passed to this page
 import { useRouter } from "next/router";
+import { useState, useEffect } from "react";
 import Episode from "@/constants/Episode";
 import { ClipLoader } from "react-spinners";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
 
-// Fetch episodes from the API
-async function fetchEpisodes(animeId: string, page: number) {
-  // async bc we're fetching data from an API
-  // animeID we get from the router
-  // page is the page number
-  // we use the page number to fetch the next page
-  const response = await fetch(
-    `https://api.jikan.moe/v4/anime/${animeId}/episodes?page=${page}`
-  );
-  // fetches the episodes from the API
-  // stores the response in the response variable
-  if (!response.ok) throw new Error("Failed to fetch");
-  // if the response is not ok, throw an error
-  const result = await response.json();
-  // if the response is ok, parse the response as JSON
-  // we await the json because it's an async function
-  const { data, pagination } = result;
-  // we destructure the data and pagination from the result
-  console.log(`Fetched page ${page}: `, data);
-  console.log("Pagination:", pagination);
-  return { data, pagination };
-  // we return the data and pagination
-  // next time log everything to see what's happening
+interface Data {
+  data: Episode[];
 }
 
 export default function AnimeId() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  const [data, setData] = useState<Data | null>(null);
+  // there's a filler boolean tag so we can add a switch for it
   const { animeId } = router.query;
-  // thinking of returning to useEffect instead of the query
-  // too much work and i don't know anything about the library
 
-  const {
-    data,
-    isLoading,
-    isError,
-    hasNextPage,
-    fetchNextPage,
-    // runs queryFn with the NextPageParam
-    isFetchingNextPage,
-    error,
-    // variables
-    // we can use these outside because
-    // react-query handles its own state
-  } = useInfiniteQuery<{
-    data: Episode[];
-    // data is an array of episodes
-    pagination: {
-      // the issue was probably with the pagination
-      last_visible_page: number;
-      has_next_page: boolean;
-    };
-    // the returns from the fetchEpisodes function
-    // we're using the Episode type from the constants folder
-  }>({
-    queryKey: ["episodes", animeId],
-    // serves the key for the query
-    // used to id and cache the query
-    queryFn: async ({ pageParam = 1 }) => {
-      if (animeId) {
-        console.log(`Fetching page ${pageParam}`);
-        return fetchEpisodes(animeId as string, pageParam as number);
-      } else {
-        throw new Error("Anime ID is undefined");
-      }
-      // used to fetch the episodes
-      // takes object as an argument, page parameter, default is 1
-      // if animeId is defined, fetch the episodes
-    },
-    getNextPageParam: (lastPage, pages) => {
-      // used to define pageParam for the queryFn
-      // lastPage is the last page fetched
-      // pages is the array of all pages fetched
-      // that's how the nextPage works
-      const nextPage = pages.length + 1;
-      if (lastPage.pagination.has_next_page) {
-        // if there's a page after the last page
-        return nextPage;
-      }
-      // if there are no more pages
-      return undefined;
-    },
-    initialPageParam: 1,
-    // sets the initial page to 1
-    enabled: !!animeId,
-    // enables the query only if animeId is defined
-  });
-
-  const handleLoadMore = () => {
-    if (hasNextPage && !isFetchingNextPage) {
-      // if the next page exists and is not being fetched already
-      fetchNextPage();
-      // fetch the next page
-      console.log("Fetching next page...");
-    }
-  };
-
+  // fetch episodes from the API
   useEffect(() => {
-    // useEffect because we're adding an event listener
-    const onScroll = () => {
-      if (
-        window.innerHeight + document.documentElement.scrollTop >=
-        document.documentElement.offsetHeight - 1
-      ) {
-        handleLoadMore();
-        // if the user scrolls to the bottom of the page, load more
-        console.log("Scrolled to the bottom");
+    const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+    // a delay function
+    // resolves the promise after a delay we pass in
+
+    const fetchEpisodes = async () => {
+      if (typeof window !== "undefined" && animeId) {
+        // checking this only runs in the browser
+        // and if there's an animeId
+        // the 2nd check might be redundant because we click anime to get here
+        let allEpisodes: Episode[] = [];
+        // this is an array of Episodes
+        // empty, we will fill it with all the episodes
+        let page = 1;
+        let morePagesAvailable = true;
+
+        setIsLoading(true);
+
+        while (morePagesAvailable) {
+          // while there are more pages available
+          try {
+            const response = await fetch(
+              `https://api.jikan.moe/v4/anime/${animeId}/episodes?page=${page}`
+            );
+            if (!response.ok) throw new Error("Failed to fetch");
+            // get the data
+            // error handle if it's not ok
+
+            const { data, pagination } = await response.json();
+            // parse the data and pagination from the response
+            // data will hold the actual data we get
+            // pagination will hold the pagination data
+
+            allEpisodes = allEpisodes.concat(data);
+            // the data we get is an array of episodes
+            // we add that to the allEpisodes array
+            // concat combines the data we get with the existing data
+
+            morePagesAvailable = pagination.has_next_page;
+            // pagination has a has_next_page boolean
+            // if there is a next page, it will be true
+            // if there is no next page, it will be false
+            // if it's false the loop will stop
+
+            page++;
+            // we go to the next page
+
+            await delay(500);
+            // 500 ms delay
+          } catch (error) {
+            console.error("Error fetching data: ", error);
+            morePagesAvailable = false;
+            // stopping the loop in case of an error
+          }
+          // TODO: we will also need to cache the data so it doesn't fetch it every time
+          // hmmmm
+        }
+        setData({ data: allEpisodes });
+        setIsLoading(false);
       }
     };
-    window.addEventListener("scroll", onScroll);
-    // adds an event listener to the window
-    return () => window.removeEventListener("scroll", onScroll);
-    // removes the event listener when the component is unmounted
-  }, [hasNextPage, isFetchingNextPage]);
-  // runs the useEffect when hasNextPage or isFetchingNextPage changes
-  // hasNextPage is here to prevent fetching the next page when there's no next page
 
-  if (isLoading)
-    return (
-      <div className="items-center justify-center">
-        <ClipLoader color="#ffffff" loading={isLoading} size={150} />;
-      </div>
-    );
-  if (isError)
-    return (
-      <span>
-        Error: {error instanceof Error ? error.message : "An error occurred"}
-      </span>
-    );
+    fetchEpisodes();
+  }, [animeId]);
 
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 text-wrap min-h-full w-full h-full">
-      {data?.pages
-        // if data exists, map through the pages
-        .flatMap((page) => page.data)
-        // flatmap is used to flatten the array and return a new array
-        // we use it to flatten the pages array
-        // returns the data from every page object
-        .map((episode: Episode) => (
-          // maps through the episodes after the pages are flattened
+  return isLoading ? (
+    <ClipLoader color="#ffffff" loading={isLoading} size={150} />
+  ) : (
+    (data?.data?.length ?? 0) > 0 && (
+      // optional chaining
+      // in case of a null or undefined value, it will return undefined
+      // the parentheses means that if the left side is undefined, it will return the right side
+      // setting the default value to 0
+      // this line checks if data.data is not null or undefined and if it has a length greater than 0
+      <div className="grid grid-cols-2 sm:grid-cols-4 text-wrap min-h-full w-full h-full">
+        {/* 4 column grid */}
+        {/* make sure that it has less or more depending on screen size */}
+        {data?.data.map((episode: Episode) => (
+          // mapping through the episodes
+          // if data or data.data is null or undefined, it will not run
           <div
             key={episode.mal_id}
-            className="flex text-center flex-col justify-center items-center m-10 bg-slate-900 p-5 rounded-3xl"
+            className="flex text-balance text-center flex-col justify-center items-center m-10 bg-slate-900 p-5 rounded-3xl"
           >
             <p>{episode.title}</p>
-            <p>{episode.mal_id}</p>
-            {/* usual returns */}
             <p>{removeTandAfter(episode.aired)}</p>
-            {/* getting only the date instead of the local hours and all */}
+            {/* air date */}
             <p>{episode.filler ? "Filler" : ""}</p>
             <p>{episode.recap ? "Recap" : ""}</p>
-            {/* if episode is filler or recap, display it. if not don't */}
+            {/* displaying filler or recap status. if it's not it's just empty */}
+            <p>{episode.synopsis}</p>
+            {/* there is no synopsis or an episode specific picture. hmmm */}
+            {/* look into this */}
+            <p>{episode.mal_id}</p>
+            {/* which episode it is */}
           </div>
         ))}
-      {isFetchingNextPage && (
-        <div className="justify-center items-center">
-          <ClipLoader color="#ffffff" loading={true} size={150} />
-          {/* TODO: center this. this isn't centered for some reason. */}
-        </div>
-      )}
-    </div>
+      </div>
+    )
   );
 }
 
