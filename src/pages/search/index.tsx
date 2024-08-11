@@ -10,6 +10,8 @@ interface Data {
   // an array of Anime
 }
 
+// TODO: make this search page go to a new page instead
+
 export default function Search() {
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<Data | null>(null);
@@ -22,28 +24,30 @@ export default function Search() {
     // we need this for the type to be correct
     const animeName = formData.get("animeName");
 
-    setIsLoading(true);
-    setSearchPerformed(true);
+    if (animeName) {
+      setIsLoading(true);
+      setSearchPerformed(true);
 
-    fetch(`https://api.jikan.moe/v4/anime?q=${animeName}`)
-      // search endpoint
-      .then((response) => {
-        if (response.ok) return response.json();
-        else throw new Error("Failed to fetch");
-      })
-      .then((data) => {
-        console.log(data);
-        console.log("the first anime is: ", data.data[0]);
-        setData(data);
-      })
-      .catch((error) => {
-        console.error("Error fetching data: ", error);
-        setData(null);
-        setIsLoading(false);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      fetch(`https://api.jikan.moe/v4/anime?q=${animeName}`)
+        // search endpoint
+        .then((response) => {
+          if (response.ok) return response.json();
+          else throw new Error("Failed to fetch");
+        })
+        .then((data) => {
+          console.log(data);
+          console.log("the first anime is: ", data.data[0]);
+          setData(data);
+        })
+        .catch((error) => {
+          console.error("Error fetching data: ", error);
+          setData(null);
+          setIsLoading(false);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    } else alert("please enter an anime name");
   }
 
   return (
@@ -73,7 +77,8 @@ export default function Search() {
           <div>
             <ClipLoader color="#ffffff" loading={isLoading} size={150} />
           </div>
-        ) : (data?.data?.length ?? 0) > 0 ? ( // Check if data array has items
+        ) : (data?.data.length ?? 0) > 0 ? (
+          // Check if data array has items
           <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-2 lg:grid-rows-2">
             {data?.data.map((anime: Anime) => (
               <div
