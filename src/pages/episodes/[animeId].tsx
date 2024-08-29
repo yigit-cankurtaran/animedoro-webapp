@@ -72,13 +72,14 @@ export default function AnimeId() {
     setWatchedEpisodes((prevWatchedEpisodes) => {
       // how did we create this?? look more into this
       const newWatchedState = !prevWatchedEpisodes[episodeId];
+      // what does this do with the not operator?
       const updatedWatchedEpisodes = {
         ...prevWatchedEpisodes,
         [episodeId]: newWatchedState,
       };
       saveWatchedEpisodes(animeId as string, updatedWatchedEpisodes);
       console.log("watched episode " + episodeId);
-      return { updatedWatchedEpisodes };
+      return updatedWatchedEpisodes;
     });
   }
 
@@ -139,8 +140,18 @@ export default function AnimeId() {
     },
     initialPageParam: 1,
     // sets the initial page to 1
-    enabled: isWatchedEpisodesLoaded,
+    enabled: !!animeId,
   });
+
+  // useEffect to merge the watched status with fetched episodes
+  useEffect(() => {
+    if (data) {
+      const allEpisodes = data.pages.flatMap((page) => page.data);
+      allEpisodes.forEach((episode) => {
+        episode.watched = watchedEpisodes[episode.mal_id] || false;
+      });
+    }
+  }, [watchedEpisodes, data]);
 
   const handleLoadMore = () => {
     if (hasNextPage && !isFetchingNextPage) {
