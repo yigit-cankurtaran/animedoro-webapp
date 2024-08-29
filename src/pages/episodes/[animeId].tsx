@@ -70,23 +70,29 @@ export default function AnimeId() {
 
   function handleWatchedToggle(episodeId: number) {
     setWatchedEpisodes((prevWatchedEpisodes) => {
-      // how did we create this?? look more into this
+      // prevWatchedEpisodes doesnt need to exist, it's just a parameter
+      // represents the previous state. we can call it anything
       const newWatchedState = !prevWatchedEpisodes[episodeId];
-      // what does this do with the not operator?
+      // toggle watched status for the selected episode
+      // finds the object we used it on, toggles its status
       const updatedWatchedEpisodes = {
         ...prevWatchedEpisodes,
         [episodeId]: newWatchedState,
+        // create new object with the updated watch status
       };
+
       saveWatchedEpisodes(animeId as string, updatedWatchedEpisodes);
+      // save updated watch status to localStorage
+
       console.log("watched episode " + episodeId);
+
+      // return new object to update the state
       return updatedWatchedEpisodes;
+      // returning this updates the state
+      // we took our old state (prevWatchedEpisodes) and ran some operations on it
+      // then updated it with the return
     });
   }
-
-  // semi-working. disappears when we refetch the episodes.
-  // to refetch, go back to the homepage, search the anime again
-  // then click on the anime to get the episodes again.
-  // TODO: fix the above issue.
 
   const {
     data,
@@ -147,11 +153,18 @@ export default function AnimeId() {
   useEffect(() => {
     if (data) {
       const allEpisodes = data.pages.flatMap((page) => page.data);
+      // flatten all episode pages into a single array
       allEpisodes.forEach((episode) => {
         episode.watched = watchedEpisodes[episode.mal_id] || false;
+        // merge the watched status from storage into the episode objects
+        // if episode is in storage with a true value it's watched
+        // else it's not watched
       });
     }
   }, [watchedEpisodes, data]);
+  // run this whenever watchedEpisodes or data changes
+  // watchedEpisodes = update when watched status changes
+  // data = update on fetch/refetch
 
   const handleLoadMore = () => {
     if (hasNextPage && !isFetchingNextPage) {
