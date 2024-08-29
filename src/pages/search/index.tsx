@@ -2,52 +2,49 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { ClipLoader } from "react-spinners";
+import {
+  useQuery,
+  useQueryClient,
+  useQueryErrorResetBoundary,
+} from "@tanstack/react-query";
 
 import Anime from "@/constants/Anime";
 
 interface Data {
   data: Anime[];
-  // an array of Anime
 }
 
-// TODO: make this search page go to a new page instead
-
 export default function Search() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [data, setData] = useState<Data | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string | null>(null);
   const [searchPerformed, setSearchPerformed] = useState(false);
+
+  const fetchAnime = async () => {
+    const response = await fetch(
+      `https://api.jikan.moe/v4/anime?q=${searchQuery}`
+    );
+    if (!response.ok) throw new Error("failed to fetch");
+    return response.json();
+  };
+
+  const { isLoading, isError, data, error } = useQuery<Data>({
+    queryKey: ["animes", searchQuery],
+    queryFn: fetchAnime,
+    enabled: !!searchQuery,
+    // query only enabled when searchQuery isn't null
+  });
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    // prevents the page from reloading
+    // prevents refreshing
+    // if it leads to any issues just change it
+
     const formData = new FormData(event.target as HTMLFormElement);
-    // we need this for the type to be correct
     const animeName = formData.get("animeName");
 
     if (animeName) {
-      setIsLoading(true);
       setSearchPerformed(true);
-
-      fetch(`https://api.jikan.moe/v4/anime?q=${animeName}`)
-        // search endpoint
-        .then((response) => {
-          if (response.ok) return response.json();
-          else throw new Error("Failed to fetch");
-        })
-        .then((data) => {
-          console.log(data);
-          console.log("the first anime is: ", data.data[0]);
-          setData(data);
-        })
-        .catch((error) => {
-          console.error("Error fetching data: ", error);
-          setData(null);
-          setIsLoading(false);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-    } else alert("please enter an anime name");
+      setSearchQuery(animeName.toString());
+    } else alert("Please enter an anime name.");
   }
 
   return (
@@ -55,7 +52,7 @@ export default function Search() {
       <form
         className="flex flex-col justify-center items-center"
         onSubmit={onSubmit}
-        id="searchForm"
+        id="searchform"
       >
         <label
           className="flex flex-col justify-center items-center"
@@ -69,23 +66,26 @@ export default function Search() {
           />
         </label>
         <input
-          className="rounded-lg p-2 m-2 text-blue-300 text-center"
+          className="rounded-lg p-2 m-2 text-blue-300 text-center hover:text-blue-500"
           type="submit"
           value="Submit"
         />
         {isLoading ? (
+          // this is from the query
           <div>
             <ClipLoader color="#ffffff" loading={isLoading} size={150} />
           </div>
+        ) : isError ? (
+          // this is also from the query
+          <p>Error: {error.message}</p>
         ) : (data?.data.length ?? 0) > 0 ? (
-          // Check if data array has items
+          // if data exists and has elements
           <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-2 lg:grid-rows-2">
             {data?.data.map((anime: Anime) => (
               <div
                 key={anime.mal_id}
                 className="flex text-balance text-justify flex-col justify-center items-center m-5 bg-slate-900 p-3 rounded-3xl"
               >
-                {/* for the episodes */}
                 <Link
                   className="text-bold text-pretty text-start text-2xl text-blue-300 m-1"
                   href={`/episodes/${anime.mal_id}`}
@@ -93,14 +93,15 @@ export default function Search() {
                   {anime.title_english
                     ? anime.title_english
                     : anime.title_japanese}
+                  {/* if english title exists use it, else use japanese title */}
                 </Link>
                 {!anime.title_english && (
                   <p className="m-1">{anime.title_japanese}</p>
+                  // if the english title exists put the japanese title under it
+                  // BUG: does it work that way though?
                 )}
-                {/* authenticity */}
+
                 <p className="m-1 text-center">{anime.synopsis}</p>
-                {/* in case people want to check */}
-                {/* this is gonna need some wrapping */}
                 <Image
                   src={anime.images.jpg.image_url}
                   alt={
@@ -117,9 +118,8 @@ export default function Search() {
             ))}
           </div>
         ) : (
-          // if it is empty and search happened display no data found
           searchPerformed &&
-          (data?.data?.length ?? 0) === 0 && <p>No data found</p>
+          (data?.data.length ?? 0) === 0 && <p>No data found.</p>
         )}
       </form>
     </div>
