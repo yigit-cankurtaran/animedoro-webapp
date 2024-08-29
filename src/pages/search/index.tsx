@@ -42,8 +42,12 @@ export default function Search() {
     const animeName = formData.get("animeName");
 
     if (animeName) {
-      setSearchPerformed(true);
-      setSearchQuery(animeName.toString());
+      if (animeName.toString().trim() != "") {
+        setSearchPerformed(true);
+        setSearchQuery(animeName.toString().trim());
+        // we set our search query in the submit part.
+        // when searchquery exists we run the query.
+      } else alert("Please enter an anime name.");
     } else alert("Please enter an anime name.");
   }
 
@@ -54,6 +58,7 @@ export default function Search() {
         onSubmit={onSubmit}
         id="searchform"
       >
+        {/* TODO: enhance this with react-hook-form */}
         <label
           className="flex flex-col justify-center items-center"
           htmlFor="searchInput"
@@ -95,10 +100,9 @@ export default function Search() {
                     : anime.title_japanese}
                   {/* if english title exists use it, else use japanese title */}
                 </Link>
-                {!anime.title_english && (
+                {anime.title_english && (
                   <p className="m-1">{anime.title_japanese}</p>
                   // if the english title exists put the japanese title under it
-                  // BUG: does it work that way though?
                 )}
 
                 <p className="m-1 text-center">{anime.synopsis}</p>
