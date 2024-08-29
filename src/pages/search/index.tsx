@@ -30,7 +30,7 @@ export default function Search() {
     queryKey: ["animes", searchQuery],
     queryFn: fetchAnime,
     enabled: !!searchQuery,
-    // query only enabled when searchQuery isn't null
+    // query only runs when searchQuery isn't null
   });
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -42,11 +42,13 @@ export default function Search() {
     const animeName = formData.get("animeName");
 
     if (animeName && animeName.toString().trim() !== "") {
+      // if animeName exists and isn't just a bunch of spaces
       setSearchPerformed(true);
       setSearchQuery(animeName.toString().trim());
       // we set our search query in the submit part.
       // when searchquery exists we run the query.
     } else alert("Please enter an anime name.");
+    // TODO: change this to a toast message later on
   }
 
   return (
