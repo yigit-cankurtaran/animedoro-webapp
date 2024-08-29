@@ -4,6 +4,26 @@ import { ClipLoader } from "react-spinners";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
+function loadWatchedEpisodes(animeId: string) {
+  if (typeof window !== "undefined") {
+    const storedWatchedEpisodes = localStorage.getItem(
+      `watchedEpisodes_${animeId}`
+    );
+    return storedWatchedEpisodes ? JSON.parse(storedWatchedEpisodes) : {};
+  }
+  return {};
+}
+
+function saveWatchedEpisodes(
+  animeId: string,
+  watchedEpisodes: { [key: number]: boolean }
+) {
+  localStorage.setItem(
+    `watchedEpisodes_${animeId}`,
+    JSON.stringify(watchedEpisodes)
+  );
+}
+
 // Fetch episodes from the API
 async function fetchEpisodes(animeId: string, page: number) {
   // async bc we're fetching data from an API
@@ -37,33 +57,28 @@ export default function AnimeId() {
     [key: number]: boolean;
   }>({});
   // we create a dictionary of ep number and watched true or false
+  const [isWatchedEpisodesLoaded, setIsWatchedEpisodesLoaded] = useState(false);
 
   // load watched eps on component mount
   useEffect(() => {
-    const storedWatchedEpisodes = localStorage.getItem(
-      `watchedEpisodes_${animeId}`
-    );
-    if (storedWatchedEpisodes) {
-      console.log("restoring watched states from storage");
-      setWatchedEpisodes(JSON.parse(storedWatchedEpisodes));
-    } else console.log("refetching from API");
+    if (animeId) {
+      const storeWatchedEpisodes = loadWatchedEpisodes(animeId as string);
+      setWatchedEpisodes(storeWatchedEpisodes);
+      setIsWatchedEpisodesLoaded(true);
+    }
   }, [animeId]);
-
-  // saving watched episodes whenever it changes
-  useEffect(() => {
-    console.log("save watched episode ");
-    localStorage.setItem(
-      `watchedEpisodes_${animeId}`,
-      JSON.stringify(watchedEpisodes)
-    );
-  }, [watchedEpisodes, animeId]);
 
   function handleWatchedToggle(episodeId: number) {
     setWatchedEpisodes((prevWatchedEpisodes) => {
       // how did we create this?? look more into this
       const newWatchedState = !prevWatchedEpisodes[episodeId];
+      const updatedWatchedEpisodes = {
+        ...prevWatchedEpisodes,
+        [episodeId]: newWatchedState,
+      };
+      saveWatchedEpisodes(animeId as string, updatedWatchedEpisodes);
       console.log("watched episode " + episodeId);
-      return { ...prevWatchedEpisodes, [episodeId]: newWatchedState };
+      return { updatedWatchedEpisodes };
     });
   }
 
@@ -124,8 +139,7 @@ export default function AnimeId() {
     },
     initialPageParam: 1,
     // sets the initial page to 1
-    enabled: !!animeId,
-    // enables the query only if animeId is defined
+    enabled: isWatchedEpisodesLoaded,
   });
 
   const handleLoadMore = () => {
