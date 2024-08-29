@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 import Episode from "@/constants/Episode";
 import { ClipLoader } from "react-spinners";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // Fetch episodes from the API
 async function fetchEpisodes(animeId: string, page: number) {
@@ -32,6 +32,45 @@ async function fetchEpisodes(animeId: string, page: number) {
 export default function AnimeId() {
   const router = useRouter();
   const { animeId } = router.query;
+
+  const [watchedEpisodes, setWatchedEpisodes] = useState<{
+    [key: number]: boolean;
+  }>({});
+  // we create a dictionary of ep number and watched true or false
+
+  // load watched eps on component mount
+  useEffect(() => {
+    const storedWatchedEpisodes = localStorage.getItem(
+      `watchedEpisodes_${animeId}`
+    );
+    if (storedWatchedEpisodes) {
+      console.log("restoring watched states from storage");
+      setWatchedEpisodes(JSON.parse(storedWatchedEpisodes));
+    } else console.log("refetching from API");
+  }, [animeId]);
+
+  // saving watched episodes whenever it changes
+  useEffect(() => {
+    console.log("save watched episode ");
+    localStorage.setItem(
+      `watchedEpisodes_${animeId}`,
+      JSON.stringify(watchedEpisodes)
+    );
+  }, [watchedEpisodes, animeId]);
+
+  function handleWatchedToggle(episodeId: number) {
+    setWatchedEpisodes((prevWatchedEpisodes) => {
+      // how did we create this?? look more into this
+      const newWatchedState = !prevWatchedEpisodes[episodeId];
+      console.log("watched episode " + episodeId);
+      return { ...prevWatchedEpisodes, [episodeId]: newWatchedState };
+    });
+  }
+
+  // semi-working. disappears when we refetch the episodes.
+  // to refetch, go back to the homepage, search the anime again
+  // then click on the anime to get the episodes again.
+  // TODO: fix the above issue.
 
   const {
     data,
@@ -153,6 +192,15 @@ export default function AnimeId() {
             <p>{episode.filler ? "Filler" : ""}</p>
             <p>{episode.recap ? "Recap" : ""}</p>
             {/* if episode is filler or recap, display it. if not don't */}
+            <button
+              onClick={() => handleWatchedToggle(episode.mal_id)}
+              className={`${
+                watchedEpisodes[episode.mal_id] ? "bg-green-500" : "bg-gray-500"
+              } px-3 py-1 rounded-full mt-2`}
+              //  if episode is marked as watched the background is green
+            >
+              {watchedEpisodes[episode.mal_id] ? "Watched" : "Mark as Watched"}
+            </button>
           </div>
         ))}
       {isFetchingNextPage && (

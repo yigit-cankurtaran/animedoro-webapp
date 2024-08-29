@@ -8,6 +8,8 @@ interface Episode {
     title: string,
     title_japanese: string,
     url: string
+    watched?: boolean
+    // optional property to check if episode is watched
 }
 
 export default Episode;
