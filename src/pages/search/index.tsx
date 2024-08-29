@@ -41,13 +41,11 @@ export default function Search() {
     const formData = new FormData(event.target as HTMLFormElement);
     const animeName = formData.get("animeName");
 
-    if (animeName) {
-      if (animeName.toString().trim() != "") {
-        setSearchPerformed(true);
-        setSearchQuery(animeName.toString().trim());
-        // we set our search query in the submit part.
-        // when searchquery exists we run the query.
-      } else alert("Please enter an anime name.");
+    if (animeName && animeName.toString().trim() !== "") {
+      setSearchPerformed(true);
+      setSearchQuery(animeName.toString().trim());
+      // we set our search query in the submit part.
+      // when searchquery exists we run the query.
     } else alert("Please enter an anime name.");
   }
 
