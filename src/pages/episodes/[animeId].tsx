@@ -99,16 +99,7 @@ export default function AnimeId() {
         // set new watched episodes
         saveWatchedEpisodes(animeId as string, newWatchedEpisodes);
         // save new watched episodes to localStorage
-      } else {
-        // if user doesn't confirm, only mark current episode as watched
-        setWatchedEpisodes((prevWatchedEpisodes) => ({
-          ...prevWatchedEpisodes,
-          [episodeId]: true,
-        }));
-        saveWatchedEpisodes(animeId as string, {
-          ...watchedEpisodes,
-          [episodeId]: true,
-        });
+        console.log("Marked all episodes before " + episodeId + " as watched");
       }
     } else {
       // if episode is already watched, mark it as unwatched
@@ -122,12 +113,14 @@ export default function AnimeId() {
       });
     }
 
+    // default behavior
     setWatchedEpisodes((prevWatchedEpisodes) => {
       // prevWatchedEpisodes doesnt need to exist, it's just a parameter
       // represents the previous state. we can call it anything
       const newWatchedState = !prevWatchedEpisodes[episodeId];
       // toggle watched status for the selected episode
       // finds the object we used it on, toggles its status
+      console.log("this also triggers");
       const updatedWatchedEpisodes = {
         ...prevWatchedEpisodes,
         [episodeId]: newWatchedState,
@@ -137,7 +130,7 @@ export default function AnimeId() {
       saveWatchedEpisodes(animeId as string, updatedWatchedEpisodes);
       // save updated watch status to localStorage
 
-      console.log("watched episode " + episodeId);
+      console.log("hit the button on episode " + episodeId);
 
       // return new object to update the state
       return updatedWatchedEpisodes;
