@@ -8,7 +8,7 @@ export default function Footer() {
       >
         Yiğit Cankurtaran
       </a>{" "}
-      with ♥️
+      with 🩷
     </footer>
   );
 }

@@ -69,6 +69,59 @@ export default function AnimeId() {
   }, [animeId]);
 
   function handleWatchedToggle(episodeId: number) {
+    if (watchedEpisodes[episodeId]) {
+      // if episode is already watched, mark it as unwatched
+      setWatchedEpisodes((prevWatchedEpisodes) => ({
+        ...prevWatchedEpisodes,
+        [episodeId]: false,
+      }));
+      saveWatchedEpisodes(animeId as string, {
+        ...watchedEpisodes,
+        [episodeId]: false,
+      });
+      return;
+    }
+
+    // the function for toggling the watched status of an episode
+    if (episodeId > 1 && !watchedEpisodes[episodeId - 1]) {
+      // only prompt if episodeId is greater than 1 and the one before that is not already watched
+      if (window.confirm(`Mark all episodes before ${episodeId} as watched?`)) {
+        // if user confirms, mark all episodes before episodeId as watched
+        const newWatchedEpisodes = {
+          ...watchedEpisodes,
+        };
+        for (let i = episodeId - 1; i >= 1; i--) {
+          newWatchedEpisodes[i] = true;
+          // mark all episodes before episodeId as watched
+        }
+
+        setWatchedEpisodes(newWatchedEpisodes);
+        // set new watched episodes
+        saveWatchedEpisodes(animeId as string, newWatchedEpisodes);
+        // save new watched episodes to localStorage
+      } else {
+        // if user doesn't confirm, only mark current episode as watched
+        setWatchedEpisodes((prevWatchedEpisodes) => ({
+          ...prevWatchedEpisodes,
+          [episodeId]: true,
+        }));
+        saveWatchedEpisodes(animeId as string, {
+          ...watchedEpisodes,
+          [episodeId]: true,
+        });
+      }
+    } else {
+      // if episode is already watched, mark it as unwatched
+      setWatchedEpisodes((prevWatchedEpisodes) => ({
+        ...prevWatchedEpisodes,
+        [episodeId]: false,
+      }));
+      saveWatchedEpisodes(animeId as string, {
+        ...watchedEpisodes,
+        [episodeId]: false,
+      });
+    }
+
     setWatchedEpisodes((prevWatchedEpisodes) => {
       // prevWatchedEpisodes doesnt need to exist, it's just a parameter
       // represents the previous state. we can call it anything
