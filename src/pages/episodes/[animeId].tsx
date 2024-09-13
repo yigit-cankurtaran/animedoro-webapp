@@ -101,16 +101,6 @@ export default function AnimeId() {
         // save new watched episodes to localStorage
         console.log("Marked all episodes before " + episodeId + " as watched");
       }
-    } else {
-      // if episode is already watched, mark it as unwatched
-      setWatchedEpisodes((prevWatchedEpisodes) => ({
-        ...prevWatchedEpisodes,
-        [episodeId]: false,
-      }));
-      saveWatchedEpisodes(animeId as string, {
-        ...watchedEpisodes,
-        [episodeId]: false,
-      });
     }
 
     // default behavior
