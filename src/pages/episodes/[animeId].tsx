@@ -58,6 +58,7 @@ export default function AnimeId() {
   }>({});
   // we create a dictionary of ep number and watched true or false
   const [isWatchedEpisodesLoaded, setIsWatchedEpisodesLoaded] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
 
   // load watched eps on component mount
   useEffect(() => {
@@ -231,6 +232,21 @@ export default function AnimeId() {
   // runs the useEffect when hasNextPage or isFetchingNextPage changes
   // hasNextPage is here to prevent fetching the next page when there's no next page
 
+  // checking for finished episodes
+  useEffect(() => {
+    if (data) {
+      const allEpisodes = data.pages.flatMap((page) => page.data);
+      // flatten all episode pages into a single array
+      if (allEpisodes.every((episode) => watchedEpisodes[episode.mal_id])) {
+        setIsFinished(true);
+        console.log("Finished anime");
+      } else {
+        setIsFinished(false);
+        console.log("Not finished");
+      }
+    }
+  }, [watchedEpisodes, data]);
+
   if (isLoading)
     return (
       <div className="items-center justify-center">
@@ -245,46 +261,51 @@ export default function AnimeId() {
     );
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 text-wrap min-h-full w-full h-full">
-      {data?.pages
-        // if data exists, map through the pages
-        .flatMap((page) => page.data)
-        // flatmap is used to flatten the array and return a new array
-        // we use it to flatten the pages array
-        // returns the data from every page object
-        .map((episode: Episode) => (
-          // maps through the episodes after the pages are flattened
-          <div
-            key={episode.mal_id}
-            className="flex text-center flex-col justify-center items-center m-10 bg-slate-900 p-5 rounded-3xl"
-          >
-            <p>{episode.title}</p>
-            <p>{episode.mal_id}</p>
-            {/* usual returns */}
-            <p>{removeTandAfter(episode.aired)}</p>
-            {/* getting only the date instead of the local hours and all */}
-            <p>{episode.filler ? "Filler" : ""}</p>
-            <p>{episode.recap ? "Recap" : ""}</p>
-            {/* if episode is filler or recap, display it. if not don't */}
-            <button
-              onClick={() => handleWatchedToggle(episode.mal_id)}
-              className={`${
-                watchedEpisodes[episode.mal_id]
-                  ? "bg-green-500 hover:text-gray-500"
-                  : "bg-gray-500 hover:text-blue-300"
-              } px-3 py-1 rounded-full mt-2`}
-              //  if episode is marked as watched the background is green
+    <div>
+      <h1>Finished: {String(isFinished)}</h1>
+      <div className="grid grid-cols-2 sm:grid-cols-4 text-wrap min-h-full w-full h-full">
+        {data?.pages
+          // if data exists, map through the pages
+          .flatMap((page) => page.data)
+          // flatmap is used to flatten the array and return a new array
+          // we use it to flatten the pages array
+          // returns the data from every page object
+          .map((episode: Episode) => (
+            // maps through the episodes after the pages are flattened
+            <div
+              key={episode.mal_id}
+              className="flex text-center flex-col justify-center items-center m-10 bg-slate-900 p-5 rounded-3xl"
             >
-              {watchedEpisodes[episode.mal_id] ? "Watched" : "Mark as Watched"}
-            </button>
+              <p>{episode.title}</p>
+              <p>{episode.mal_id}</p>
+              {/* usual returns */}
+              <p>{removeTandAfter(episode.aired)}</p>
+              {/* getting only the date instead of the local hours and all */}
+              <p>{episode.filler ? "Filler" : ""}</p>
+              <p>{episode.recap ? "Recap" : ""}</p>
+              {/* if episode is filler or recap, display it. if not don't */}
+              <button
+                onClick={() => handleWatchedToggle(episode.mal_id)}
+                className={`${
+                  watchedEpisodes[episode.mal_id]
+                    ? "bg-green-500 hover:text-gray-500"
+                    : "bg-gray-500 hover:text-blue-300"
+                } px-3 py-1 rounded-full mt-2`}
+                //  if episode is marked as watched the background is green
+              >
+                {watchedEpisodes[episode.mal_id]
+                  ? "Watched"
+                  : "Mark as Watched"}
+              </button>
+            </div>
+          ))}
+        {isFetchingNextPage && (
+          <div className="justify-center items-center">
+            <ClipLoader color="#ffffff" loading={true} size={150} />
+            {/* TODO: center this. this isn't centered for some reason. */}
           </div>
-        ))}
-      {isFetchingNextPage && (
-        <div className="justify-center items-center">
-          <ClipLoader color="#ffffff" loading={true} size={150} />
-          {/* TODO: center this. this isn't centered for some reason. */}
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
