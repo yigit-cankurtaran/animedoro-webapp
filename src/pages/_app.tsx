@@ -4,6 +4,7 @@ import "tailwindcss/tailwind.css"; // Import Tailwind CSS
 import RootLayout from "./layout";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { Toaster } from "react-hot-toast";
 
 // declaring this outside because no backend yet
 // in event that i implement this with a backend
@@ -20,6 +21,7 @@ function MyApp({
 }) {
   return (
     <QueryClientProvider client={myClient}>
+      <Toaster />
       <RootLayout>
         <Component {...pageProps} />
       </RootLayout>

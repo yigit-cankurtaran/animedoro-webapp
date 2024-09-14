@@ -262,7 +262,7 @@ export default function AnimeId() {
 
   return (
     <div>
-      <h1>Finished: {String(isFinished)}</h1>
+      <h1 className="text-center">Finished: {String(isFinished)}</h1>
       <div className="grid grid-cols-2 sm:grid-cols-4 text-wrap min-h-full w-full h-full">
         {data?.pages
           .flatMap((page) => page.data)

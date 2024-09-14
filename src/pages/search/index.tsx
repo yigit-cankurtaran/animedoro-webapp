@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ClipLoader } from "react-spinners";
 import { useQuery } from "@tanstack/react-query";
 import { useForm, SubmitHandler } from "react-hook-form";
+import { errorToast } from "@/things/Toast";
 
 import Anime from "@/constants/Anime";
 
@@ -51,8 +52,7 @@ export default function Search() {
       setSearchPerformed(true);
       setSearchQuery(animeName);
     } else {
-      alert("Please enter an anime name.");
-      // TODO: change this to a toast message later on
+      errorToast("Please enter a valid name.");
     }
   };
 
