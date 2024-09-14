@@ -265,25 +265,17 @@ export default function AnimeId() {
       <h1>Finished: {String(isFinished)}</h1>
       <div className="grid grid-cols-2 sm:grid-cols-4 text-wrap min-h-full w-full h-full">
         {data?.pages
-          // if data exists, map through the pages
           .flatMap((page) => page.data)
-          // flatmap is used to flatten the array and return a new array
-          // we use it to flatten the pages array
-          // returns the data from every page object
-          .map((episode: Episode) => (
-            // maps through the episodes after the pages are flattened
+          .map((episode) => (
             <div
               key={episode.mal_id}
               className="flex text-center flex-col justify-center items-center m-10 bg-slate-900 p-5 rounded-3xl"
             >
               <p>{episode.title}</p>
               <p>{episode.mal_id}</p>
-              {/* usual returns */}
               <p>{removeTandAfter(episode.aired)}</p>
-              {/* getting only the date instead of the local hours and all */}
               <p>{episode.filler ? "Filler" : ""}</p>
               <p>{episode.recap ? "Recap" : ""}</p>
-              {/* if episode is filler or recap, display it. if not don't */}
               <button
                 onClick={() => handleWatchedToggle(episode.mal_id)}
                 className={`${
@@ -291,7 +283,6 @@ export default function AnimeId() {
                     ? "bg-green-500 hover:text-gray-500"
                     : "bg-gray-500 hover:text-blue-300"
                 } px-3 py-1 rounded-full mt-2`}
-                //  if episode is marked as watched the background is green
               >
                 {watchedEpisodes[episode.mal_id]
                   ? "Watched"
@@ -299,13 +290,12 @@ export default function AnimeId() {
               </button>
             </div>
           ))}
-        {isFetchingNextPage && (
-          <div className="justify-center items-center">
-            <ClipLoader color="#ffffff" loading={true} size={150} />
-            {/* TODO: center this. this isn't centered for some reason. */}
-          </div>
-        )}
       </div>
+      {isFetchingNextPage && (
+        <div className="flex justify-center items-center w-full">
+          <ClipLoader color="#ffffff" loading={true} size={150} />
+        </div>
+      )}
     </div>
   );
 }
