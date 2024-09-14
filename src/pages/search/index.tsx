@@ -2,11 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { ClipLoader } from "react-spinners";
-import {
-  useQuery,
-  useQueryClient,
-  useQueryErrorResetBoundary,
-} from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { useForm, SubmitHandler } from "react-hook-form";
 
 import Anime from "@/constants/Anime";
 
@@ -14,10 +11,24 @@ interface Data {
   data: Anime[];
 }
 
+// Define the form input type
+type FormInputs = {
+  animeName: string;
+};
+
 export default function Search() {
+  // State to store the search query and track if a search has been performed
   const [searchQuery, setSearchQuery] = useState<string | null>(null);
   const [searchPerformed, setSearchPerformed] = useState(false);
 
+  // Initialize react-hook-form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormInputs>();
+
+  // Function to fetch anime data from the API
   const fetchAnime = async () => {
     const response = await fetch(
       `https://api.jikan.moe/v4/anime?q=${searchQuery}`
@@ -26,65 +37,56 @@ export default function Search() {
     return response.json();
   };
 
+  // Use react-query to manage API call state
   const { isLoading, isError, data, error } = useQuery<Data>({
     queryKey: ["animes", searchQuery],
     queryFn: fetchAnime,
-    enabled: !!searchQuery,
-    // query only runs when searchQuery isn't null
+    enabled: !!searchQuery, // Only run the query when searchQuery is not null
   });
 
-  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    // prevents refreshing
-    // if it leads to any issues just change it
-
-    const formData = new FormData(event.target as HTMLFormElement);
-    const animeName = formData.get("animeName");
-
-    if (animeName && animeName.toString().trim() !== "") {
-      // if animeName exists and isn't just a bunch of spaces
+  // Handle form submission
+  const onSubmit: SubmitHandler<FormInputs> = (data) => {
+    const animeName = data.animeName.trim();
+    if (animeName !== "") {
       setSearchPerformed(true);
-      setSearchQuery(animeName.toString().trim());
-      // we set our search query in the submit part.
-      // when searchquery exists we run the query.
-    } else alert("Please enter an anime name.");
-    // TODO: change this to a toast message later on
-  }
+      setSearchQuery(animeName);
+    } else {
+      alert("Please enter an anime name.");
+      // TODO: change this to a toast message later on
+    }
+  };
 
   return (
     <div className="w-full">
       <form
         className="flex flex-col justify-center items-center"
-        onSubmit={onSubmit}
+        onSubmit={handleSubmit(onSubmit)}
         id="searchform"
       >
-        {/* TODO: enhance this with react-hook-form */}
         <label
           className="flex flex-col justify-center items-center"
           htmlFor="searchInput"
         >
           <p className="font-bold">Search anime:</p>
           <input
+            {...register("animeName", { required: "Anime name is required" })}
             type="text"
-            name="animeName"
             className="text-black text-pretty p-2 rounded-lg text-center bg-slate-50"
           />
         </label>
+        {errors.animeName && <span>{errors.animeName.message}</span>}
         <input
           className="rounded-lg p-2 m-2 text-blue-300 text-center hover:text-blue-500"
           type="submit"
           value="Submit"
         />
         {isLoading ? (
-          // this is from the query
           <div>
             <ClipLoader color="#ffffff" loading={isLoading} size={150} />
           </div>
         ) : isError ? (
-          // this is also from the query
-          <p>Error: {error.message}</p>
+          <p>Error: {(error as Error).message}</p>
         ) : (data?.data.length ?? 0) > 0 ? (
-          // if data exists and has elements
           <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-2 lg:grid-rows-2">
             {data?.data.map((anime: Anime) => (
               <div
@@ -98,13 +100,10 @@ export default function Search() {
                   {anime.title_english
                     ? anime.title_english
                     : anime.title_japanese}
-                  {/* if english title exists use it, else use japanese title */}
                 </Link>
                 {anime.title_english && (
                   <p className="m-1">{anime.title_japanese}</p>
-                  // if the english title exists put the japanese title under it
                 )}
-
                 <p className="m-1 text-center">{anime.synopsis}</p>
                 <Image
                   src={anime.images.jpg.image_url}
