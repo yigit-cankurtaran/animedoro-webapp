@@ -74,6 +74,16 @@ export default function AnimeId() {
     });
   };
 
+  // get next episode
+  const nextEpisode = useMemo(() => {
+    if (data) {
+      const allEpisodes = data.pages.flatMap((page) => page.data);
+      const nextEpisode = allEpisodes.find((episode) => !watchedEpisodes[episode.mal_id]);
+      return nextEpisode;
+    }
+    return null;
+  }, [watchedEpisodes, data]);
+
   // Flatten episode data from all pages
   const allEpisodes = useMemo(() => {
     return data?.pages.flatMap((page) => page.data) || [];
@@ -98,7 +108,8 @@ export default function AnimeId() {
   // Render episode list
   return (
     <div>
-      <h1 className="text-center">Finished: {String(isFinished)}</h1>
+      <h1 className="text-center">The anime is {isFinished ? "finished" : "not finished"}</h1>
+      {!isFinished && <h1 className="text-center">Next Episode: {nextEpisode?.title}</h1>}
       <div className="grid grid-cols-2 sm:grid-cols-4 text-wrap min-h-full w-full h-full">
         {allEpisodes.map((episode) => (
           <EpisodeItem
