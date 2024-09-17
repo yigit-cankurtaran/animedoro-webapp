@@ -1,15 +1,28 @@
+import { useAtom } from 'jotai';
+import { watchListAtom } from '@/atoms/animeAtoms';
 import Image from "next/image";
 import Link from "next/link";
 import Anime from "@/constants/Anime";
+import { successToast, errorToast } from './Toast';
 
 // Define props type for AnimeCard component
 type AnimeCardProps = {
   anime: Anime;
-  onAddToWatch: (mal_id: number) => void;
 };
 
-// AnimeCard component to display anime information
-export function AnimeCard({ anime, onAddToWatch }: AnimeCardProps) {
+export function AnimeCard({ anime }: AnimeCardProps) {
+  const [watchlist, setWatchlist] = useAtom(watchListAtom);
+
+  const onAddToWatch = () => {
+    if (watchlist.some(item => item.mal_id === anime.mal_id)) {
+      errorToast(`${anime.title_english || anime.title_japanese} is already in your watchlist`);
+      return;
+    }
+
+    setWatchlist((prev) => [...prev, anime]);
+    successToast(`${anime.title_english || anime.title_japanese} added to watchlist`);
+  };
+
   return (
     // Container for the anime card
     <div className="flex flex-col justify-center items-center bg-slate-900 p-3 rounded-3xl">
@@ -37,19 +50,14 @@ export function AnimeCard({ anime, onAddToWatch }: AnimeCardProps) {
         className="m-1"
       />
       {/* Display status button based on anime's finished and watching state */}
-      {!anime.finished && !anime.watching && (
-        <button onClick={() => onAddToWatch(anime.mal_id)} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full mt-2">
+      {!watchlist.some(item => item.mal_id === anime.mal_id) && (
+        <button onClick={onAddToWatch} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full mt-2">
           Add to Watch
         </button>
       )}
-      {anime.finished && (
-        <span className="bg-green-500 text-white font-bold py-2 px-4 rounded-full mt-2">
-          Finished
-        </span>
-      )}
-      {anime.watching && !anime.finished && (
+      {watchlist.some(item => item.mal_id === anime.mal_id) && (
         <span className="bg-yellow-500 text-black font-bold py-2 px-4 rounded-full mt-2">
-          Watching
+          In Watchlist
         </span>
       )}
     </div>

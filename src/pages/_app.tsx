@@ -6,6 +6,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import toast, { Toaster, ToastBar } from "react-hot-toast";
 import { useMyQueryClient } from "@/hooks/useMyQueryClient";
+import { Provider } from "jotai";
 
 
 function MyApp({
@@ -19,6 +20,7 @@ function MyApp({
   // better for safety and performance
   const myClient = useMyQueryClient();
   return (
+    <Provider>
     <QueryClientProvider client={myClient}>
       <Toaster>
         {(t) => (
@@ -49,8 +51,9 @@ function MyApp({
       <RootLayout>
         <Component {...pageProps} />
       </RootLayout>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    </Provider>
   );
 }
 

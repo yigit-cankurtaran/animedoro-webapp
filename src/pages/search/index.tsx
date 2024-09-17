@@ -21,12 +21,6 @@ export default function Search() {
     debouncedSetSearchQuery(query);
   };
 
-  const handleAddToWatch = (mal_id: number) => {
-    console.log("Adding to watch", mal_id);
-    // TODO: add to watch
-    // will be implemented after jotai is implemented
-  };
-
   return (
     <div className="w-full min-h-screen flex flex-col">
       {/* Render search form component */}
@@ -45,7 +39,7 @@ export default function Search() {
           // Render grid of anime cards if data is available
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {animeData.map((anime) => (
-              <AnimeCard key={anime.mal_id} anime={anime} onAddToWatch={handleAddToWatch} />
+              <AnimeCard key={anime.mal_id} anime={anime} />
             ))}
           </div>
         ) : (

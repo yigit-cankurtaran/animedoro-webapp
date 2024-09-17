@@ -12,6 +12,9 @@ export default function Home() {
       <Link href="/timer" className="text-blue-400">
         Timer
       </Link>
+      <Link href="/watchlist" className="text-blue-400">
+        Watchlist
+      </Link>
     </div>
   );
 }
