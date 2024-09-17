@@ -125,3 +125,7 @@ export default function AnimeId() {
     </div>
   );
 }
+
+// This component is used to display the episodes of an anime
+
+// TODO: implement watching an episode adding to the watchlist
