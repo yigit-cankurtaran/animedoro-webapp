@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Anime from "@/constants/Anime";
 import { successToast, errorToast } from './Toast';
+import { watchedEpisodesAtom, totalEpisodesAtom } from '@/atoms/episodeAtoms';
 
 // Define props type for AnimeCard component
 type AnimeCardProps = {
@@ -12,6 +13,8 @@ type AnimeCardProps = {
 
 export function AnimeCard({ anime }: AnimeCardProps) {
   const [watchlist, setWatchlist] = useAtom(watchListAtom);
+  const [watchedEpisodes, setWatchedEpisodes] = useAtom(watchedEpisodesAtom);
+  const [totalEpisodes, setTotalEpisodes] = useAtom(totalEpisodesAtom);
 
   const onAddToWatch = () => {
     if (watchlist.some(item => item.mal_id === anime.mal_id)) {
@@ -56,9 +59,14 @@ export function AnimeCard({ anime }: AnimeCardProps) {
         </button>
       )}
       {watchlist.some(item => item.mal_id === anime.mal_id) && (
-        <span className="bg-yellow-500 text-black font-bold py-2 px-4 rounded-full mt-2">
-          In Watchlist
-        </span>
+        <div className="flex flex-row">
+          <span className="bg-yellow-500 text-black font-bold py-2 px-4 rounded-full mt-2">
+            In Watchlist
+          </span>
+          <span className="bg-green-500 text-black font-bold py-2 px-4 rounded-full mt-2">
+            {watchedEpisodes[anime.mal_id]?.length || 0} / {totalEpisodes[anime.mal_id] || 0}
+          </span>
+        </div>
       )}
     </div>
   );

@@ -1,121 +1,81 @@
-// Import necessary dependencies and components
 import { useRouter } from "next/router";
 import { ClipLoader } from "react-spinners";
 import { useEffect, useState, useMemo } from "react";
+import { useAtom } from "jotai";
+import { watchedEpisodesAtom, totalEpisodesAtom } from "@/atoms/episodeAtoms";
 import { useEpisodes } from "@/hooks/useEpisodes";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { EpisodeItem } from "@/things/EpisodeItem";
-import { loadWatchedEpisodes, saveWatchedEpisodes } from "@/utils/episodeUtils";
 
 export default function AnimeId() {
-  // Get animeId from router query
   const router = useRouter();
   const { animeId } = router.query;
 
-  // Initialize state for watched episodes and finished status
-  const [watchedEpisodes, setWatchedEpisodes] = useState<{ [key: number]: boolean }>({});
+  const [watchedEpisodes, setWatchedEpisodes] = useAtom(watchedEpisodesAtom);
+  const [totalEpisodes, setTotalEpisodes] = useAtom(totalEpisodesAtom);
   const [isFinished, setIsFinished] = useState(false);
 
-  // Fetch episodes data using custom hook
   const { data, isLoading, isError, hasNextPage, fetchNextPage, isFetchingNextPage, error } = useEpisodes(animeId as string);
 
-  // Load watched episodes from local storage on component mount
   useEffect(() => {
-    if (animeId) {
-      const storedWatchedEpisodes = loadWatchedEpisodes(animeId as string);
-      setWatchedEpisodes(storedWatchedEpisodes);
+    if (data && animeId) {
+      const allEpisodes = data.pages.flatMap((page) => page.data);
+      setTotalEpisodes(prev => ({ ...prev, [animeId as string]: allEpisodes.length }));
     }
-  }, [animeId]);
+  }, [data, animeId, setTotalEpisodes]);
 
-  // Handle toggling watched status for episodes
   const handleWatchedToggle = (episodeId: number) => {
-    if (watchedEpisodes[episodeId]) {
-      // If episode is already watched, mark it as unwatched
-      setWatchedEpisodes((prevWatchedEpisodes) => ({
-        ...prevWatchedEpisodes,
-        [episodeId]: false,
-      }));
-      saveWatchedEpisodes(animeId as string, {
-        ...watchedEpisodes,
-        [episodeId]: false,
+    if (animeId) {
+      setWatchedEpisodes(prev => {
+        const animeWatched = prev[animeId as string] || [];
+        const updatedWatched = animeWatched.includes(episodeId)
+          ? animeWatched.filter(id => id !== episodeId)
+          : [...animeWatched, episodeId];
+        return { ...prev, [animeId as string]: updatedWatched };
       });
-      return;
     }
-
-    // If marking an episode as watched and previous episodes are unwatched
-    if (episodeId > 1 && !watchedEpisodes[episodeId - 1]) {
-      if (window.confirm(`Mark all episodes before ${episodeId} as watched?`)) {
-        // Mark all previous episodes as watched
-        const newWatchedEpisodes = {
-          ...watchedEpisodes,
-        };
-        for (let i = episodeId - 1; i >= 1; i--) {
-          newWatchedEpisodes[i] = true;
-        }
-
-        setWatchedEpisodes(newWatchedEpisodes);
-        saveWatchedEpisodes(animeId as string, newWatchedEpisodes);
-        console.log("Marked all episodes before " + episodeId + " as watched");
-      }
-    }
-
-    // Toggle watched status for the current episode
-    setWatchedEpisodes((prevWatchedEpisodes) => {
-      const newWatchedState = !prevWatchedEpisodes[episodeId];
-      const updatedWatchedEpisodes = {
-        ...prevWatchedEpisodes,
-        [episodeId]: newWatchedState,
-      };
-
-      saveWatchedEpisodes(animeId as string, updatedWatchedEpisodes);
-      console.log("hit the button on episode " + episodeId);
-
-      return updatedWatchedEpisodes;
-    });
   };
 
-  // get next episode
   const nextEpisode = useMemo(() => {
-    if (data) {
+    if (data && animeId) {
       const allEpisodes = data.pages.flatMap((page) => page.data);
-      const nextEpisode = allEpisodes.find((episode) => !watchedEpisodes[episode.mal_id]);
-      return nextEpisode;
+      const animeWatched = watchedEpisodes[animeId as string] || [];
+      return allEpisodes.find((episode) => !animeWatched.includes(episode.mal_id));
     }
     return null;
-  }, [watchedEpisodes, data]);
+  }, [watchedEpisodes, data, animeId]);
 
-  // Flatten episode data from all pages
   const allEpisodes = useMemo(() => {
     return data?.pages.flatMap((page) => page.data) || [];
   }, [data]);
 
-  // Check if all episodes are watched
   useEffect(() => {
-    if (data) {
+    if (data && animeId) {
       const allEpisodes = data.pages.flatMap((page) => page.data);
-      setIsFinished(allEpisodes.every((episode) => watchedEpisodes[episode.mal_id]));
+      const animeWatched = watchedEpisodes[animeId as string] || [];
+      setIsFinished(allEpisodes.every((episode) => animeWatched.includes(episode.mal_id)));
     }
-  }, [watchedEpisodes, data]);
+  }, [watchedEpisodes, data, animeId]);
 
-  // Set up infinite scrolling
   useInfiniteScroll(fetchNextPage, !!hasNextPage, isFetchingNextPage);
 
-  // Show loading spinner while data is being fetched
   if (isLoading) return <div className="items-center justify-center"><ClipLoader color="#ffffff" loading={isLoading} size={150} /></div>;
-  // Show error message if there's an error
   if (isError) return <span>Error: {error instanceof Error ? error.message : "An error occurred"}</span>;
 
-  // Render episode list
+  const watchedCount = watchedEpisodes[animeId as string]?.length || 0;
+  const totalCount = totalEpisodes[animeId as string] || 0;
+
   return (
     <div>
       <h1 className="text-center">The anime is {isFinished ? "finished" : "not finished"}</h1>
+      <h2 className="text-center">Watched Episodes: {watchedCount} / {totalCount}</h2>
       {!isFinished && <h1 className="text-center">Next Episode: {nextEpisode?.title}</h1>}
       <div className="grid grid-cols-2 sm:grid-cols-4 text-wrap min-h-full w-full h-full">
         {allEpisodes.map((episode) => (
           <EpisodeItem
             key={episode.mal_id}
             episode={episode}
-            isWatched={watchedEpisodes[episode.mal_id]}
+            isWatched={watchedEpisodes[animeId as string]?.includes(episode.mal_id) || false}
             onToggleWatched={handleWatchedToggle}
           />
         ))}
