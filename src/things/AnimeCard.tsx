@@ -16,13 +16,17 @@ export function AnimeCard({ anime }: AnimeCardProps) {
   const [watchedEpisodes, setWatchedEpisodes] = useAtom(watchedEpisodesAtom);
   const [totalEpisodes, setTotalEpisodes] = useAtom(totalEpisodesAtom);
 
+  // Function to add an anime to the watchlist
   const onAddToWatch = () => {
+    // Check if the anime is already in the watchlist
     if (watchlist.some(item => item.mal_id === anime.mal_id)) {
       errorToast(`${anime.title_english || anime.title_japanese} is already in your watchlist`);
       return;
     }
 
+    // Add the anime to the watchlist
     setWatchlist((prev) => [...prev, anime]);
+    // Show success toast
     successToast(`${anime.title_english || anime.title_japanese} added to watchlist`);
   };
 
@@ -54,17 +58,20 @@ export function AnimeCard({ anime }: AnimeCardProps) {
       />
       {/* Display status button based on anime's finished and watching state */}
       {!watchlist.some(item => item.mal_id === anime.mal_id) && (
+        // if the anime is not in the watchlist
         <button onClick={onAddToWatch} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full mt-2">
           Add to Watch
         </button>
       )}
       {watchlist.some(item => item.mal_id === anime.mal_id) && (
+        // if the anime is in the watchlist
         <div className="flex flex-row">
           <span className="bg-yellow-500 text-black font-bold py-2 px-4 rounded-full mt-2">
             In Watchlist
           </span>
           <span className="bg-green-500 text-black font-bold py-2 px-4 rounded-full mt-2">
             {watchedEpisodes[anime.mal_id]?.length || 0} / {totalEpisodes[anime.mal_id] || 0}
+            {/* Display the number of episodes watched and total episodes */}
           </span>
         </div>
       )}

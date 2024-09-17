@@ -5,7 +5,7 @@ import Episode from "@/constants/Episode";
 type EpisodeItemProps = {
   episode: Episode;
   isWatched: boolean;
-  onToggleWatched: (episodeId: number) => void;
+  onToggleWatched: (episodeId: number, episodeNumber: number) => void;
 };
 
 // EpisodeItem component to display individual episode information
@@ -13,10 +13,10 @@ export function EpisodeItem({ episode, isWatched, onToggleWatched }: EpisodeItem
   return (
     // Container for episode information
     <div className="flex text-center flex-col justify-center items-center m-10 bg-slate-900 p-5 rounded-3xl">
+      {/* Display episode ID */}
+      <p>Episode {episode.mal_id}</p>
       {/* Display episode title */}
       <p>{episode.title}</p>
-      {/* Display episode ID */}
-      <p>{episode.mal_id}</p>
       {/* Display formatted air date */}
       <p>{removeTandAfter(episode.aired)}</p>
       {/* Show if episode is filler */}
@@ -25,7 +25,7 @@ export function EpisodeItem({ episode, isWatched, onToggleWatched }: EpisodeItem
       <p>{episode.recap ? "Recap" : ""}</p>
       {/* Button to toggle watched status */}
       <button
-        onClick={() => onToggleWatched(episode.mal_id)}
+        onClick={() => onToggleWatched(episode.mal_id, episode.mal_id)}
         className={`${
           isWatched
             ? "bg-green-500 hover:text-gray-500"
