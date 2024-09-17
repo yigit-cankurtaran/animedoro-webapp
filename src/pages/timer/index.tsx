@@ -1,8 +1,11 @@
-import { useState, useCallback, useMemo } from "react";
-import { CountdownCircleTimer } from "react-countdown-circle-timer";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { successToast, errorToast } from "@/things/Toast";
 import { useForm, SubmitHandler } from "react-hook-form";
 import MyTimer from "@/things/MyTimer";
+import { useAtom } from "jotai";
+import { nextEpisodeAtom } from "@/atoms/episodeAtoms";
+import { watchListAtom } from "@/atoms/animeAtoms";
+import Anime from "@/constants/Anime";
 
 type FormInputs = {
   time: number;
@@ -12,6 +15,16 @@ export default function Timer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [time, setTime] = useState(20 * 60);
   const [key, setKey] = useState(0);
+  const [episodeToWatch, setEpisodeToWatch] = useAtom(nextEpisodeAtom);
+  const [watchList] = useAtom(watchListAtom);
+
+  // Create a map of anime IDs to titles
+  const animeTitles = useMemo(() => {
+    return watchList.reduce((acc, anime: Anime) => {
+      acc[anime.mal_id] = anime.title_english || anime.title_japanese || 'Unknown';
+      return acc;
+    }, {} as Record<number, string>);
+  }, [watchList]);
 
   const {
     register,
@@ -94,8 +107,23 @@ export default function Timer() {
           duration={time}
         />
       </div>
+      <div className="flex flex-col items-center">
+        <p className="font-bold mb-2">Next Episode:</p>
+        <div className="flex flex-col items-center text-center">
+          
+          {Object.entries(episodeToWatch).map(([animeId, episode]) => (
+            <p key={animeId}>
+              <span className="font-semibold">{animeTitles[Number(animeId)] || animeId}:</span> 
+              <br />
+              {episode.id} - {episode.title}
+            </p>
+          ))}
+        </div>
+      </div>
+
     </div>
   );
 }
 
 // TODO: implement a break timer as well
+// TODO: add a solution to watch the episode

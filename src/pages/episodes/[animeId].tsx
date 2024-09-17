@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { ClipLoader } from "react-spinners";
 import { useEffect, useState, useMemo } from "react";
 import { useAtom } from "jotai";
-import { watchedEpisodesAtom, totalEpisodesAtom } from "@/atoms/episodeAtoms";
+import { watchedEpisodesAtom, totalEpisodesAtom, nextEpisodeAtom } from "@/atoms/episodeAtoms";
 import { useEpisodes } from "@/hooks/useEpisodes";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { EpisodeItem } from "@/things/EpisodeItem";
@@ -17,6 +17,7 @@ export default function AnimeId() {
   const [watchedEpisodes, setWatchedEpisodes] = useAtom(watchedEpisodesAtom);
   const [totalEpisodes, setTotalEpisodes] = useAtom(totalEpisodesAtom);
   const [isFinished, setIsFinished] = useState(false);
+  const [episodeToWatch, setEpisodeToWatch] = useAtom(nextEpisodeAtom);
 
   // Fetch episodes data
   const { data, isLoading, isError, hasNextPage, fetchNextPage, isFetchingNextPage, error } = useEpisodes(animeId as string);
@@ -75,6 +76,16 @@ export default function AnimeId() {
     return null;
   }, [watchedEpisodes, data, animeId]);
 
+  // Set the next episode to watch
+  useEffect(() => {
+    if (nextEpisode && animeId) {
+      setEpisodeToWatch(prev => ({
+        ...prev,
+        [animeId as string]: { id: nextEpisode.mal_id, title: nextEpisode.title }
+      }));
+    }
+  }, [nextEpisode, setEpisodeToWatch, animeId]);
+
   // Get all episodes
   const allEpisodes = useMemo(() => {
     return data?.pages.flatMap((page) => page.data) || [];
@@ -106,7 +117,9 @@ export default function AnimeId() {
     <div>
       <h1 className="text-center">The anime is {isFinished ? "finished" : "not finished"}</h1>
       <h2 className="text-center">Watched Episodes: {watchedCount} / {totalCount}</h2>
-      {!isFinished && <h1 className="text-center">Next Episode: {nextEpisode?.title}</h1>}
+      {!isFinished && nextEpisode && (
+        <h1 className="text-center">Next Episode: {nextEpisode.title}</h1>
+      )}
       <div className="grid grid-cols-2 sm:grid-cols-4 text-wrap min-h-full w-full h-full">
         {allEpisodes.map((episode) => (
           <EpisodeItem
