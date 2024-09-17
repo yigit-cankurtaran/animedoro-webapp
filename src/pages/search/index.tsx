@@ -1,10 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { ClipLoader } from "react-spinners";
 import { useQuery } from "@tanstack/react-query";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { errorToast } from "@/things/Toast";
+import debounce from 'lodash/debounce';
 
 import Anime from "@/constants/Anime";
 
@@ -30,13 +31,12 @@ export default function Search() {
   } = useForm<FormInputs>();
 
   // Function to fetch anime data from the API
-  const fetchAnime = async () => {
-    const response = await fetch(
-      `https://api.jikan.moe/v4/anime?q=${searchQuery}`
-    );
+  const fetchAnime = useCallback(async () => {
+    if (!searchQuery) return { data: [] };
+    const response = await fetch(`https://api.jikan.moe/v4/anime?q=${searchQuery}`);
     if (!response.ok) throw new Error("failed to fetch");
     return response.json();
-  };
+  }, [searchQuery]);
 
   // Use react-query to manage API call state
   const { isLoading, isError, data, error } = useQuery<Data>({
@@ -45,21 +45,31 @@ export default function Search() {
     enabled: !!searchQuery, // Only run the query when searchQuery is not null
   });
 
+  // Debounce the search query
+  const debouncedSetSearchQuery = useMemo(
+    () => debounce((query: string) => setSearchQuery(query), 300),
+    []
+  );
+  
+
   // Handle form submission
-  const onSubmit: SubmitHandler<FormInputs> = (data) => {
+  const onSubmit: SubmitHandler<FormInputs> = useCallback((data) => {
     const animeName = data.animeName.trim();
     if (animeName !== "") {
       setSearchPerformed(true);
-      setSearchQuery(animeName);
+      debouncedSetSearchQuery(animeName);
     } else {
       errorToast("Please enter a valid name.");
     }
-  };
+  }, [debouncedSetSearchQuery]);
+
+  // Memoize anime data
+  const animeData = useMemo(() => data?.data || [], [data]);
 
   return (
-    <div className="w-full">
+    <div className="w-full min-h-screen flex flex-col">
       <form
-        className="flex flex-col justify-center items-center"
+        className="flex flex-col justify-center items-center p-4"
         onSubmit={handleSubmit(onSubmit)}
         id="searchform"
       >
@@ -80,26 +90,24 @@ export default function Search() {
           type="submit"
           value="Submit"
         />
+      </form>
+
+      <div className="flex-grow p-4">
         {isLoading ? (
-          <div>
+          <div className="flex justify-center items-center h-full">
             <ClipLoader color="#ffffff" loading={isLoading} size={150} />
           </div>
         ) : isError ? (
-          <p>Error: {(error as Error).message}</p>
-        ) : (data?.data.length ?? 0) > 0 ? (
-          <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-2 lg:grid-rows-2">
-            {data?.data.map((anime: Anime) => (
-              <div
-                key={anime.mal_id}
-                className="flex text-balance text-justify flex-col justify-center items-center m-5 bg-slate-900 p-3 rounded-3xl"
-              >
+          <p className="text-center">Error: {(error as Error).message}</p>
+        ) : animeData.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {animeData.map((anime) => (
+              <div key={anime.mal_id} className="flex flex-col justify-center items-center bg-slate-900 p-3 rounded-3xl">
                 <Link
                   className="text-bold text-pretty text-start text-2xl text-blue-300 m-1"
                   href={`/episodes/${anime.mal_id}`}
                 >
-                  {anime.title_english
-                    ? anime.title_english
-                    : anime.title_japanese}
+                  {anime.title_english || anime.title_japanese}
                 </Link>
                 {anime.title_english && (
                   <p className="m-1">{anime.title_japanese}</p>
@@ -107,11 +115,7 @@ export default function Search() {
                 <p className="m-1 text-center">{anime.synopsis}</p>
                 <Image
                   src={anime.images.jpg.image_url}
-                  alt={
-                    anime.title_english
-                      ? anime.title_english
-                      : anime.title_japanese
-                  }
+                  alt={anime.title_english || anime.title_japanese}
                   width={200}
                   height={300}
                   style={{ objectFit: "contain" }}
@@ -121,10 +125,9 @@ export default function Search() {
             ))}
           </div>
         ) : (
-          searchPerformed &&
-          (data?.data.length ?? 0) === 0 && <p>No data found.</p>
+          searchPerformed && animeData.length === 0 && <p className="text-center">No data found.</p>
         )}
-      </form>
+      </div>
     </div>
   );
 }

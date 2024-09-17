@@ -2,15 +2,11 @@ import React from "react";
 import "./globals.css"; // Import your global styles here
 import "tailwindcss/tailwind.css"; // Import Tailwind CSS
 import RootLayout from "./layout";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import toast, { Toaster, ToastBar } from "react-hot-toast";
+import { useMyQueryClient } from "@/hooks/useMyQueryClient";
 
-// declaring this outside because no backend yet
-// in event that i implement this with a backend
-// create a state and push it in the app, with auth
-
-const myClient = new QueryClient();
 
 function MyApp({
   Component,
@@ -19,6 +15,7 @@ function MyApp({
   Component: React.ElementType;
   pageProps: any;
 }) {
+  const myClient = useMyQueryClient();
   return (
     <QueryClientProvider client={myClient}>
       <Toaster>

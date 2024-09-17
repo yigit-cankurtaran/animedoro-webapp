@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 import Episode from "@/constants/Episode";
 import { ClipLoader } from "react-spinners";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 function loadWatchedEpisodes(animeId: string) {
   if (typeof window !== "undefined") {
@@ -186,11 +186,14 @@ export default function AnimeId() {
     enabled: !!animeId,
   });
 
+  const allEpisodes = useMemo(() => {
+    return data?.pages.flatMap((page) => page.data) || [];
+    // flatten all episode pages into a single array
+  }, [data]);
+
   // useEffect to merge the watched status with fetched episodes
   useEffect(() => {
     if (data) {
-      const allEpisodes = data.pages.flatMap((page) => page.data);
-      // flatten all episode pages into a single array
       allEpisodes.forEach((episode) => {
         episode.watched = watchedEpisodes[episode.mal_id] || false;
         // merge the watched status from storage into the episode objects
@@ -212,6 +215,7 @@ export default function AnimeId() {
     }
   };
 
+  // infinite scroll
   useEffect(() => {
     // useEffect because we're adding an event listener
     const onScroll = () => {
