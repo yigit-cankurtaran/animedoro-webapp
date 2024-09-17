@@ -5,10 +5,11 @@ import Anime from "@/constants/Anime";
 // Define props type for AnimeCard component
 type AnimeCardProps = {
   anime: Anime;
+  onAddToWatch: (mal_id: number) => void;
 };
 
 // AnimeCard component to display anime information
-export function AnimeCard({ anime }: AnimeCardProps) {
+export function AnimeCard({ anime, onAddToWatch }: AnimeCardProps) {
   return (
     // Container for the anime card
     <div className="flex flex-col justify-center items-center bg-slate-900 p-3 rounded-3xl">
@@ -35,6 +36,22 @@ export function AnimeCard({ anime }: AnimeCardProps) {
         style={{ objectFit: "contain" }}
         className="m-1"
       />
+      {/* Display status button based on anime's finished and watching state */}
+      {!anime.finished && !anime.watching && (
+        <button onClick={() => onAddToWatch(anime.mal_id)} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full mt-2">
+          Add to Watch
+        </button>
+      )}
+      {anime.finished && (
+        <span className="bg-green-500 text-white font-bold py-2 px-4 rounded-full mt-2">
+          Finished
+        </span>
+      )}
+      {anime.watching && !anime.finished && (
+        <span className="bg-yellow-500 text-black font-bold py-2 px-4 rounded-full mt-2">
+          Watching
+        </span>
+      )}
     </div>
   );
 }

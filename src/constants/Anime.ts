@@ -8,6 +8,8 @@ interface Anime {
       image_url: string;
     };
   };
+  finished: boolean;
+  watching: boolean;
 }
 
 export default Anime;
