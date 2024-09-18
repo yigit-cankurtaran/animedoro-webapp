@@ -122,6 +122,14 @@ export default function AnimeId() {
     }
   }, [isFinished, animeId, animeData, setFinishedList]);
 
+  
+  useEffect(() => {
+    // if the anime isn't finished, remove it from the finished list
+    if (!isFinished && animeId && animeData) {
+      setFinishedList(prev => prev.filter(anime => anime.mal_id !== parseInt(animeId as string, 10)));
+    }
+  }, [isFinished, animeId, animeData, setFinishedList]);
+
   // TODO: if the anime is in the finished list, take it out of the watchlist
 
   // Set up infinite scrolling
