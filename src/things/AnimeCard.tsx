@@ -2,6 +2,7 @@ import { useAtom } from 'jotai';
 import { watchListAtom } from '@/atoms/animeAtoms';
 import Image from "next/image";
 import Link from "next/link";
+import { finishedListAtom } from '@/atoms/animeAtoms';
 import Anime from "@/constants/Anime";
 import { successToast, errorToast } from './Toast';
 import { watchedEpisodesAtom, totalEpisodesAtom } from '@/atoms/episodeAtoms';
@@ -15,7 +16,7 @@ export function AnimeCard({ anime }: AnimeCardProps) {
   const [watchlist, setWatchlist] = useAtom(watchListAtom);
   const [watchedEpisodes, setWatchedEpisodes] = useAtom(watchedEpisodesAtom);
   const [totalEpisodes, setTotalEpisodes] = useAtom(totalEpisodesAtom);
-
+  const [finishedList] = useAtom(finishedListAtom);
   // Function to add an anime to the watchlist
   const onAddToWatch = () => {
     // Check if the anime is already in the watchlist
@@ -69,12 +70,20 @@ export function AnimeCard({ anime }: AnimeCardProps) {
           <span className="bg-yellow-500 text-black font-bold py-2 px-4 rounded-full mt-2">
             In Watchlist
           </span>
-          <span className="bg-green-500 text-black font-bold py-2 px-4 rounded-full mt-2">
-            {watchedEpisodes[anime.mal_id]?.length || 0} / {totalEpisodes[anime.mal_id] || 0}
-            {/* Display the number of episodes watched and total episodes */}
+        </div>
+      )}
+      {finishedList.some(item => item.mal_id === anime.mal_id) && (
+        // if the anime is in the finished list
+        <div className="flex flex-row">
+          <span className="bg-red-500 text-black font-bold py-2 px-4 rounded-full mt-2">
+            Finished
           </span>
         </div>
       )}
+      <span className="bg-green-500 text-black font-bold py-2 px-4 rounded-full mt-2">
+        {watchedEpisodes[anime.mal_id]?.length || 0} / {totalEpisodes[anime.mal_id] || 0}
+        {/* Display the number of episodes watched and total episodes */}
+      </span>
     </div>
   );
 }

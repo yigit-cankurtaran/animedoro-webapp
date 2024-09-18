@@ -15,6 +15,9 @@ export default function Home() {
       <Link href="/watchlist" className="text-blue-400">
         Watchlist
       </Link>
+      <Link href="/finishlist" className="text-blue-400">
+        Finished
+      </Link>
     </div>
   );
 }

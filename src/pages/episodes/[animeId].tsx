@@ -4,9 +4,11 @@ import { ClipLoader } from "react-spinners";
 import { useEffect, useState, useMemo } from "react";
 import { useAtom } from "jotai";
 import { watchedEpisodesAtom, totalEpisodesAtom, nextEpisodeAtom } from "@/atoms/episodeAtoms";
+import { finishedListAtom } from "@/atoms/animeAtoms";
 import { useEpisodes } from "@/hooks/useEpisodes";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { EpisodeItem } from "@/things/EpisodeItem";
+import Anime from "@/constants/Anime";
 
 export default function AnimeId() {
   // Get animeId from router query
@@ -17,10 +19,15 @@ export default function AnimeId() {
   const [watchedEpisodes, setWatchedEpisodes] = useAtom(watchedEpisodesAtom);
   const [totalEpisodes, setTotalEpisodes] = useAtom(totalEpisodesAtom);
   const [isFinished, setIsFinished] = useState(false);
+  const [finishedList, setFinishedList] = useAtom(finishedListAtom);
   const [episodeToWatch, setEpisodeToWatch] = useAtom(nextEpisodeAtom);
 
   // Fetch episodes data
-  const { data, isLoading, isError, hasNextPage, fetchNextPage, isFetchingNextPage, error } = useEpisodes(animeId as string);
+  const { episodes, animeDetails } = useEpisodes(animeId as string);
+
+  // Destructure the queries
+  const { data, isLoading, isError, hasNextPage, fetchNextPage, isFetchingNextPage, error } = episodes;
+  const { data: animeData, isLoading: animeLoading, isError: animeError } = animeDetails;
 
   // Update total episodes when data changes
   useEffect(() => {
@@ -99,6 +106,23 @@ export default function AnimeId() {
       setIsFinished(allEpisodes.every((episode) => animeWatched.includes(episode.mal_id)));
     }
   }, [watchedEpisodes, data, animeId]);
+
+  // if all episodes are watched, add the anime to the finished list
+  useEffect(() => {
+    if (isFinished && animeId && animeData) {
+      setFinishedList(prev => {
+        const id = parseInt(animeId as string, 10);
+        if (isNaN(id) || prev.some(anime => anime.mal_id === id)) return prev;
+        return [...prev, {
+          ...animeData,
+          finished: true,
+          watching: false
+        } as Anime];
+      });
+    }
+  }, [isFinished, animeId, animeData, setFinishedList]);
+
+  // TODO: if the anime is in the finished list, take it out of the watchlist
 
   // Set up infinite scrolling
   useInfiniteScroll(fetchNextPage, !!hasNextPage, isFetchingNextPage);
