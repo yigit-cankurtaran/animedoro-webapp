@@ -11,6 +11,7 @@ import { EpisodeItem } from "@/things/EpisodeItem";
 import Anime from "@/constants/Anime";
 import { fetchEpisodes } from "@/utils/episodeUtils";
 import Episode from "@/constants/Episode";
+import { addToWatchlist } from '@/utils/watchlistUtils';
 
 export default function AnimeId() {
   // Get animeId from router query
@@ -76,23 +77,12 @@ const fetchAllPagesAndSetTotalEpisodes = useCallback(async () => {
         });
       }
 
-      // If the anime is not in the watchlist, add it and fetch all episodes
+      // If the anime is not in the watchlist, add it
       if (!watchList.some(anime => anime.mal_id === parseInt(animeId as string, 10))) {
-        setWatchList(prev => {
-          const id = parseInt(animeId as string, 10);
-          if (isNaN(id) || prev.some(anime => anime.mal_id === id)) return prev;
-          return [...prev, {
-            ...animeData,
-            finished: false,
-            watching: true
-          } as Anime];
-        });
-
-        // Fetch all pages and set total episodes
-        await fetchAllPagesAndSetTotalEpisodes();
+        addToWatchlist(animeData as Anime, watchList, setWatchList, setTotalEpisodes);
       }
     }
-  }, [animeId, watchedEpisodes, watchList, animeData, setWatchedEpisodes, setWatchList, fetchAllPagesAndSetTotalEpisodes]);
+  }, [animeId, watchedEpisodes, watchList, animeData, setWatchedEpisodes, setWatchList, setTotalEpisodes]);
 
   // Find the next unwatched episode
   const nextEpisode = useMemo(() => {

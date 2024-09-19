@@ -4,8 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { finishedListAtom } from '@/atoms/animeAtoms';
 import Anime from "@/constants/Anime";
-import { successToast, errorToast } from './Toast';
 import { watchedEpisodesAtom, totalEpisodesAtom } from '@/atoms/episodeAtoms';
+import { addToWatchlist, removeFromWatchlist } from '@/utils/watchlistUtils';
 
 // Define props type for AnimeCard component
 type AnimeCardProps = {
@@ -17,28 +17,15 @@ export function AnimeCard({ anime }: AnimeCardProps) {
   const [watchedEpisodes, setWatchedEpisodes] = useAtom(watchedEpisodesAtom);
   const [totalEpisodes, setTotalEpisodes] = useAtom(totalEpisodesAtom);
   const [finishedList] = useAtom(finishedListAtom);
+
   // Function to add an anime to the watchlist
   const onAddToWatch = () => {
-    // Check if the anime is already in the watchlist
-    if (watchlist.some(item => item.mal_id === anime.mal_id)) {
-      errorToast(`${anime.title_english || anime.title_japanese} is already in your watchlist`);
-      return;
-    }
-
-    // Add the anime to the watchlist
-    setWatchlist((prev) => [...prev, anime]);
-    // Show success toast
-    successToast(`${anime.title_english || anime.title_japanese} added to watchlist`);
+    addToWatchlist(anime, watchlist, setWatchlist, setTotalEpisodes);
   };
-  // TODO: this is bugged with the new episode fetching system
-  // make this run the fetching episodes function as well
 
   // Function to remove an anime from the watchlist
   const onRemoveFromWatch = () => {
-    // Remove the anime from the watchlist
-    setWatchlist((prev) => prev.filter(item => item.mal_id !== anime.mal_id));
-    // Show success toast
-    successToast(`${anime.title_english || anime.title_japanese} removed from watchlist`);
+    removeFromWatchlist(anime, setWatchlist);
   };
 
   return (
