@@ -4,7 +4,7 @@ import { ClipLoader } from "react-spinners";
 import { useEffect, useState, useMemo } from "react";
 import { useAtom } from "jotai";
 import { watchedEpisodesAtom, totalEpisodesAtom, nextEpisodeAtom } from "@/atoms/episodeAtoms";
-import { finishedListAtom } from "@/atoms/animeAtoms";
+import { finishedListAtom, watchListAtom } from "@/atoms/animeAtoms";
 import { useEpisodes } from "@/hooks/useEpisodes";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { EpisodeItem } from "@/things/EpisodeItem";
@@ -20,6 +20,7 @@ export default function AnimeId() {
   const [totalEpisodes, setTotalEpisodes] = useAtom(totalEpisodesAtom);
   const [isFinished, setIsFinished] = useState(false);
   const [finishedList, setFinishedList] = useAtom(finishedListAtom);
+  const [watchList, setWatchList] = useAtom(watchListAtom);
   const [episodeToWatch, setEpisodeToWatch] = useAtom(nextEpisodeAtom);
 
   // Fetch episodes data
@@ -70,6 +71,19 @@ export default function AnimeId() {
           return { ...prev, [animeId as string]: updatedWatched };
         });
       }
+
+      // if the anime is not in the watchlist, add it to the watchlist
+      if (!watchList.some(anime => anime.mal_id === parseInt(animeId as string, 10))) {
+      setWatchList(prev => {
+        const id = parseInt(animeId as string, 10);
+        if (isNaN(id) || prev.some(anime => anime.mal_id === id)) return prev;
+        return [...prev, {
+          ...animeData,
+          finished: false,
+          watching: true
+          } as Anime];
+        });
+      }
     }
   };
 
@@ -107,7 +121,7 @@ export default function AnimeId() {
     }
   }, [watchedEpisodes, data, animeId]);
 
-  // if all episodes are watched, add the anime to the finished list
+  // if all episodes are watched, add the anime to the finished list and remove it from the watchlist
   useEffect(() => {
     if (isFinished && animeId && animeData) {
       setFinishedList(prev => {
@@ -119,6 +133,7 @@ export default function AnimeId() {
           watching: false
         } as Anime];
       });
+      setWatchList(prev => prev.filter(anime => anime.mal_id !== parseInt(animeId as string, 10)));
     }
   }, [isFinished, animeId, animeData, setFinishedList]);
 
@@ -173,4 +188,5 @@ export default function AnimeId() {
 
 // This component is used to display the episodes of an anime
 
-// TODO: implement watching an episode adding to the watchlist
+// TODO: test watching an episode adding to the watchlist
+// TODO: implement finishing the anime removing it from the watchlist
