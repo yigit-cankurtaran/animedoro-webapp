@@ -1,7 +1,7 @@
 // Import necessary dependencies and components
 import { useRouter } from "next/router";
 import { ClipLoader } from "react-spinners";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useAtom } from "jotai";
 import { watchedEpisodesAtom, totalEpisodesAtom, nextEpisodeAtom } from "@/atoms/episodeAtoms";
 import { finishedListAtom, watchListAtom } from "@/atoms/animeAtoms";
@@ -9,6 +9,8 @@ import { useEpisodes } from "@/hooks/useEpisodes";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { EpisodeItem } from "@/things/EpisodeItem";
 import Anime from "@/constants/Anime";
+import { fetchEpisodes } from "@/utils/episodeUtils";
+import Episode from "@/constants/Episode";
 
 export default function AnimeId() {
   // Get animeId from router query
@@ -30,40 +32,42 @@ export default function AnimeId() {
   const { data, isLoading, isError, hasNextPage, fetchNextPage, isFetchingNextPage, error } = episodes;
   const { data: animeData, isLoading: animeLoading, isError: animeError } = animeDetails;
 
-  // Update total episodes when data changes
-  useEffect(() => {
-    if (data && animeId) {
-      const allEpisodes = data.pages.flatMap((page) => page.data);
-      setTotalEpisodes(prev => ({ ...prev, [animeId as string]: allEpisodes.length }));
-    }
-  }, [data, animeId, setTotalEpisodes]);
+
+const fetchAllPagesAndSetTotalEpisodes = useCallback(async () => {
+  if (!animeId) return;
+
+  let allEpisodes: Episode[] = [];
+  let page = 1;
+  let hasNextPage = true;
+
+  while (hasNextPage) {
+    const { data, pagination } = await fetchEpisodes(animeId as string, page);
+    allEpisodes = [...allEpisodes, ...data];
+    hasNextPage = pagination.has_next_page;
+    page++;
+  }
+
+  const totalEpisodeCount = allEpisodes.length;
+  setTotalEpisodes(prev => ({ ...prev, [animeId as string]: totalEpisodeCount }));
+}, [animeId, setTotalEpisodes]);
 
   // Handle toggling watched status for episodes
-  const handleWatchedToggle = (episodeId: number, episodeNumber: number) => {
+  const handleWatchedToggle = useCallback(async (episodeId: number, episodeNumber: number) => {
     if (animeId) {
       const animeWatched = watchedEpisodes[animeId as string] || [];
       if (!animeWatched.includes(episodeId) && episodeNumber > animeWatched.length + 1) {
-        // If the episode is not in the watched list
-        // and the episode number is greater than the current length of the watched list
-        // ask the user to mark the episode as watched
         if (window.confirm(`Do you want to mark ${episodeNumber} episodes as watched?`)) {
           setWatchedEpisodes(prev => {
             const updatedWatched = Array.from({ length: episodeNumber }, (_, i) => i + 1);
             return { ...prev, [animeId as string]: updatedWatched };
           });
         } else {
-          // If the user does not want to mark the episode as watched
-          // add the episode to the watched list
           setWatchedEpisodes(prev => {
-            const updatedWatched = animeWatched.includes(episodeId)
-              ? animeWatched.filter(id => id !== episodeId)
-              : [...animeWatched, episodeId];
+            const updatedWatched = [...animeWatched, episodeId];
             return { ...prev, [animeId as string]: updatedWatched };
           });
         }
       } else {
-        // If the episode is already in the watched list
-        // remove the episode from the watched list
         setWatchedEpisodes(prev => {
           const updatedWatched = animeWatched.includes(episodeId)
             ? animeWatched.filter(id => id !== episodeId)
@@ -72,20 +76,23 @@ export default function AnimeId() {
         });
       }
 
-      // if the anime is not in the watchlist, add it to the watchlist
+      // If the anime is not in the watchlist, add it and fetch all episodes
       if (!watchList.some(anime => anime.mal_id === parseInt(animeId as string, 10))) {
-      setWatchList(prev => {
-        const id = parseInt(animeId as string, 10);
-        if (isNaN(id) || prev.some(anime => anime.mal_id === id)) return prev;
-        return [...prev, {
-          ...animeData,
-          finished: false,
-          watching: true
+        setWatchList(prev => {
+          const id = parseInt(animeId as string, 10);
+          if (isNaN(id) || prev.some(anime => anime.mal_id === id)) return prev;
+          return [...prev, {
+            ...animeData,
+            finished: false,
+            watching: true
           } as Anime];
         });
+
+        // Fetch all pages and set total episodes
+        await fetchAllPagesAndSetTotalEpisodes();
       }
     }
-  };
+  }, [animeId, watchedEpisodes, watchList, animeData, setWatchedEpisodes, setWatchList, fetchAllPagesAndSetTotalEpisodes]);
 
   // Find the next unwatched episode
   const nextEpisode = useMemo(() => {
