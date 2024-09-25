@@ -11,7 +11,7 @@ import { EpisodeItem } from "@/things/EpisodeItem";
 import Anime from "@/constants/Anime";
 import { fetchEpisodes } from "@/utils/episodeUtils";
 import Episode from "@/constants/Episode";
-import { addToWatchlist } from '@/utils/watchlistUtils';
+import { addToWatchlist, removeFromWatchlist } from '@/utils/watchlistUtils';
 
 export default function AnimeId() {
   // Get animeId from router query
@@ -114,11 +114,20 @@ const fetchAllPagesAndSetTotalEpisodes = useCallback(async () => {
     if (data && animeId) {
       const allEpisodes = data.pages.flatMap((page) => page.data);
       const animeWatched = watchedEpisodes[animeId as string] || [];
-      setIsFinished(allEpisodes.every((episode) => animeWatched.includes(episode.mal_id)));
-    }
-  }, [watchedEpisodes, data, animeId]);
+      const allWatched = allEpisodes.every((episode) => animeWatched.includes(episode.mal_id));
+      setIsFinished(allWatched);
 
-  // if all episodes are watched, add the anime to the finished list and remove it from the watchlist
+      if (allWatched && animeData) {
+        // Check if the anime is in the watchlist before removing it
+        const isInWatchlist = watchList.some(anime => anime.mal_id === animeData.mal_id);
+        if (isInWatchlist) {
+          removeFromWatchlist(animeData as Anime, setWatchList);
+        }
+      }
+    }
+  }, [watchedEpisodes, data, animeId, animeData, setWatchList, watchList]);
+
+  // if all episodes are watched, add the anime to the finished list
   useEffect(() => {
     if (isFinished && animeId && animeData) {
       setFinishedList(prev => {
@@ -130,13 +139,11 @@ const fetchAllPagesAndSetTotalEpisodes = useCallback(async () => {
           watching: false
         } as Anime];
       });
-      setWatchList(prev => prev.filter(anime => anime.mal_id !== parseInt(animeId as string, 10)));
     }
   }, [isFinished, animeId, animeData, setFinishedList]);
 
-  
+  // if the anime isn't finished, remove it from the finished list
   useEffect(() => {
-    // if the anime isn't finished, remove it from the finished list
     if (!isFinished && animeId && animeData) {
       setFinishedList(prev => prev.filter(anime => anime.mal_id !== parseInt(animeId as string, 10)));
     }

@@ -2,7 +2,6 @@ import { fetchEpisodes } from './episodeUtils';
 import Anime from '@/constants/Anime';
 import { successToast, errorToast } from '@/things/Toast';
 import Episode from '@/constants/Episode';
-
 export async function addToWatchlist(
   anime: Anime,
   watchlist: Anime[],
