@@ -33,25 +33,6 @@ export default function AnimeId() {
   const { data, isLoading, isError, hasNextPage, fetchNextPage, isFetchingNextPage, error } = episodes;
   const { data: animeData, isLoading: animeLoading, isError: animeError } = animeDetails;
 
-
-const fetchAllPagesAndSetTotalEpisodes = useCallback(async () => {
-  if (!animeId) return;
-
-  let allEpisodes: Episode[] = [];
-  let page = 1;
-  let hasNextPage = true;
-
-  while (hasNextPage) {
-    const { data, pagination } = await fetchEpisodes(animeId as string, page);
-    allEpisodes = [...allEpisodes, ...data];
-    hasNextPage = pagination.has_next_page;
-    page++;
-  }
-
-  const totalEpisodeCount = allEpisodes.length;
-  setTotalEpisodes(prev => ({ ...prev, [animeId as string]: totalEpisodeCount }));
-}, [animeId, setTotalEpisodes]);
-
   // Handle toggling watched status for episodes
   const handleWatchedToggle = useCallback(async (episodeId: number, episodeNumber: number) => {
     if (animeId) {
@@ -162,8 +143,6 @@ const fetchAllPagesAndSetTotalEpisodes = useCallback(async () => {
     }
   }, [isFinished, animeId, animeData, setFinishedList]);
 
-  // TODO: if the anime is in the finished list, take it out of the watchlist
-
   // Set up infinite scrolling
   useInfiniteScroll(fetchNextPage, !!hasNextPage, isFetchingNextPage);
 
@@ -204,6 +183,3 @@ const fetchAllPagesAndSetTotalEpisodes = useCallback(async () => {
 }
 
 // This component is used to display the episodes of an anime
-
-// TODO: test watching an episode adding to the watchlist
-// TODO: implement finishing the anime removing it from the watchlist

@@ -38,9 +38,8 @@ export default function Timer() {
       return;
     }
     setIsPlaying(true);
-    setKey((prevKey) => prevKey + 1);
     successToast("Start");
-  }, [key, isPlaying]);
+  }, [isPlaying]);
 
   const handleStop = useCallback(() => {
     if (!isPlaying) {
@@ -48,18 +47,15 @@ export default function Timer() {
       return;
     }
     setIsPlaying(false);
-    setKey((prevKey) => prevKey + 1);
     successToast("Stop");
     return { shouldRepeat: false, delay: 1 };
-  }, [key, isPlaying]);
+  }, [isPlaying]);
 
   const handleReset = useCallback(() => {
     setIsPlaying(false);
-    setKey((prevKey) => prevKey + 1);
-    console.log("key: ", key);
     successToast("Reset");
     handleStart();
-  }, [key, handleStart]);
+  }, [handleStart]);
 
   const timerProps = useMemo(
     () => ({
@@ -124,5 +120,6 @@ export default function Timer() {
   );
 }
 
+// TODO: currently the time setting doesn't work
 // TODO: implement a break timer as well
 // TODO: add a solution to watch the episode
