@@ -106,11 +106,6 @@ export default function AnimeId() {
     }
   }, [data, watchedEpisodes, setEpisodeToWatch, animeId, isInFinishedList]);
 
-  // Get all episodes
-  const allEpisodes = useMemo(() => {
-    return data?.pages.flatMap((page) => page.data) || [];
-  }, [data]);
-
   // Check if all episodes are watched
   useEffect(() => {
     if (data && animeId) {
@@ -129,12 +124,27 @@ export default function AnimeId() {
     }
   }, [watchedEpisodes, data, animeId, animeData, setWatchList, watchList]);
 
+  // Update the total episode count whenever new episodes are loaded
+  // helps with new episode releases
+  useEffect(() => {
+    if (data && animeId) {
+      const allEpisodes = data.pages.flatMap((page) => page.data);
+      setTotalEpisodes(prev => ({
+        ...prev,
+        [animeId as string]: Math.max(prev[animeId as string] || 0, allEpisodes.length)
+      }));
+    }
+  }, [data, animeId, setTotalEpisodes]);
+
   // if all episodes are watched, add the anime to the finished list
   useEffect(() => {
     if (isFinished && animeId && animeData) {
       setFinishedList(prev => {
+        // Convert animeId from string to integer
         const id = parseInt(animeId as string, 10);
+        // Check if the conversion to integer was successful and if the anime is already in the finished list
         if (isNaN(id) || prev.some(anime => anime.mal_id === id)) return prev;
+        // If the anime is not in the finished list, add it with finished and watching status updated
         return [...prev, {
           ...animeData,
           finished: true,
@@ -150,6 +160,19 @@ export default function AnimeId() {
       setFinishedList(prev => prev.filter(anime => anime.mal_id !== parseInt(animeId as string, 10)));
     }
   }, [isFinished, animeId, animeData, setFinishedList]);
+
+  useEffect(() => {
+    // Check if data and animeId are available
+    if (data && animeId) {
+      // Flatten all episodes from data pages into a single array
+      const allEpisodes = data.pages.flatMap((page) => page.data);
+      // Update total episodes count for the current animeId
+      setTotalEpisodes(prev => ({
+        ...prev,
+        [animeId as string]: Math.max(prev[animeId as string] || 0, allEpisodes.length)
+      }));
+    }
+  }, [data, animeId, setTotalEpisodes]);
 
   // Set up infinite scrolling
   useInfiniteScroll(fetchNextPage, !!hasNextPage, isFetchingNextPage);
@@ -172,7 +195,7 @@ export default function AnimeId() {
         <h1 className="text-center">Next Episode: {nextEpisode.title}</h1>
       )}
       <div className="grid grid-cols-2 sm:grid-cols-4 text-wrap min-h-full w-full h-full">
-        {allEpisodes.map((episode) => (
+        {data?.pages.flatMap((page) => page.data).map((episode) => (
           <EpisodeItem
             key={episode.mal_id}
             episode={episode}
@@ -191,7 +214,3 @@ export default function AnimeId() {
 }
 
 // This component is used to display the episodes of an anime
-
-// TODO: the episode count doesn't update when new episodes are released
-// e.g. one piece is still stuck on 1119 even though 1120 released
-// look into this and fix it, implement a refetch maybe?

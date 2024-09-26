@@ -38,23 +38,36 @@ export default function Timer() {
   }, [watchList]);
 
   const watchEpisode = (animeId: number, episodeId: number) => {
-    // mark episode as watched
-    setWatchedEpisodes(prevEpisodes => ({ ...prevEpisodes, [animeId]: [...(prevEpisodes[animeId] || []), episodeId] }));
+    // Mark episode as watched
+    setWatchedEpisodes(prevEpisodes => ({ 
+      ...prevEpisodes, 
+      [animeId]: [...(prevEpisodes[animeId] || []), episodeId] 
+    }));
     successToast(`Watched episode ${episodeId} of ${animeTitles[animeId]}`);
 
     const animeEpisodes = episodeToWatch[animeId]?.allEpisodes || [];
     const nextEpisode = animeEpisodes.find(ep => ep.id > episodeId);
 
     if (nextEpisode) {
+      // Update to the next episode
       setEpisodeToWatch(prev => ({
         ...prev,
         [animeId]: { ...prev[animeId], id: nextEpisode.id, title: nextEpisode.title }
       }));
+    } else if (episodeId < totalEpisodes[animeId]) {
+      // If we don't have information about the next episode, but we know there are more episodes
+      setEpisodeToWatch(prev => ({
+        ...prev,
+        [animeId]: { ...prev[animeId], id: episodeId + 1, title: `Episode ${episodeId + 1}` }
+        // if we don't have info about the next episode, we just assume the next episode is the next number in the series
+        // this might not work for all anime, but it's good enough for now
+      }));
     } else {
+      // This was the last episode
       const animeToMove = watchList.find((anime: Anime) => anime.mal_id === animeId);
       if (animeToMove) {
-        setWatchList((prev: Anime[]) => prev.filter((anime: Anime) => anime.mal_id !== animeId));
         setFinishedList((prev: Anime[]) => [...prev, animeToMove]);
+        setWatchList((prev: Anime[]) => prev.filter((anime: Anime) => anime.mal_id !== animeId));
         setEpisodeToWatch(prev => {
           const newState = { ...prev };
           delete newState[animeId];
