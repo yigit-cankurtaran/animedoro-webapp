@@ -14,7 +14,6 @@ type FormInputs = {
 export default function Timer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [time, setTime] = useState(20 * 60);
-  const [key, setKey] = useState(0);
   const [episodeToWatch, setEpisodeToWatch] = useAtom(nextEpisodeAtom);
   const [watchList] = useAtom(watchListAtom);
 
@@ -32,16 +31,16 @@ export default function Timer() {
     formState: { errors },
   } = useForm<FormInputs>();
 
-  const handleStart = useCallback(() => {
+  function handleStart() {
     if (isPlaying) {
       errorToast("Already playing");
       return;
     }
     setIsPlaying(true);
     successToast("Start");
-  }, [isPlaying]);
+  }
 
-  const handleStop = useCallback(() => {
+  function handleStop() {
     if (!isPlaying) {
       errorToast("Not playing");
       return;
@@ -49,23 +48,13 @@ export default function Timer() {
     setIsPlaying(false);
     successToast("Stop");
     return { shouldRepeat: false, delay: 1 };
-  }, [isPlaying]);
+  }
 
-  const handleReset = useCallback(() => {
+  function handleReset() {
     setIsPlaying(false);
     successToast("Reset");
     handleStart();
-  }, [handleStart]);
-
-  const timerProps = useMemo(
-    () => ({
-      key: key,
-      isPlaying: isPlaying,
-      duration: time,
-      strokeWidth: 16,
-    }),
-    [key, isPlaying, time]
-  );
+  }
 
   const onSubmit: SubmitHandler<FormInputs> = (data) => {
     setTime(data.time * 60);
@@ -120,6 +109,5 @@ export default function Timer() {
   );
 }
 
-// TODO: currently the time setting doesn't work
 // TODO: implement a break timer as well
 // TODO: add a solution to watch the episode
