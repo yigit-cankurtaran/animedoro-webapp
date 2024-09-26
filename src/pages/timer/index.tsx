@@ -31,8 +31,13 @@ export default function Timer() {
   const { register, handleSubmit } = useForm<FormInputs>();
 
   // lookup table for anime titles
+  // This useMemo hook is used to memoize the anime titles based on the watchList state.
+  // It reduces the watchList array into an object where the keys are the anime's mal_id and the values are their titles.
+  // If the anime has an English title, it uses that; otherwise, it uses the Japanese title or defaults to 'Unknown'.
   const animeTitles = React.useMemo(() => {
     return watchList.reduce((acc, anime: Anime) => {
+      // For each anime in the watchList, add an entry to the accumulator object.
+      // The key is the anime's mal_id, and the value is its title (English if available, Japanese if not, or 'Unknown' if neither).
       acc[anime.mal_id] = anime.title_english || anime.title_japanese || 'Unknown';
       return acc;
     }, {} as Record<number, string>);
@@ -41,7 +46,9 @@ export default function Timer() {
   const watchEpisode = async (animeId: number, episodeId: number) => {
     // Mark episode as watched
     setWatchedEpisodes(prevEpisodes => {
+      // Add the current episode to the watched episodes for this anime
       const updatedEpisodes = [...(prevEpisodes[animeId] || []), episodeId];
+      // Return the updated watched episodes object
       return { ...prevEpisodes, [animeId]: updatedEpisodes };
     });
     successToast(`Watched episode ${episodeId} of ${animeTitles[animeId]}`);

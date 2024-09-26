@@ -132,15 +132,23 @@ export default function AnimeId() {
 
   // if all episodes are watched, add the anime to the finished list
   useEffect(() => {
+    // Check if the anime is finished, animeId is available, and animeData is present
     if (isFinished && animeId && animeData) {
+      // Flatten all episodes from data pages into a single array, default to empty if data is undefined
       const allEpisodes = data?.pages.flatMap((page) => page.data) || [];
+      // Get the episodes watched for the current animeId, default to empty if not found
       const animeWatched = watchedEpisodes[animeId as string] || [];
+      // Check if all episodes are actually watched
       const allActuallyWatched = allEpisodes.every((episode) => animeWatched.includes(episode.mal_id));
 
+      // If all episodes are watched, add the anime to the finished list
       if (allActuallyWatched) {
         setFinishedList(prev => {
+          // Convert animeId to a number to match the type in the finished list
           const id = parseInt(animeId as string, 10);
+          // Check if the anime is already in the finished list or if the id is invalid
           if (isNaN(id) || prev.some(anime => anime.mal_id === id)) return prev;
+          // Add the anime to the finished list with finished and watching status updated
           return [...prev, {
             ...animeData,
             finished: true,
@@ -154,10 +162,15 @@ export default function AnimeId() {
   // if the anime isn't finished, remove it from the finished list
   useEffect(() => {
     if (!isFinished && animeId && animeData) {
-      setFinishedList(prev => prev.filter(anime => anime.mal_id !== parseInt(animeId as string, 10)));
+      // Convert animeId to a number to match the type in the finished list
+      const id = parseInt(animeId as string, 10);
+      // Filter out the anime from the finished list if it exists
+      setFinishedList(prev => prev.filter(anime => anime.mal_id !== id));
     }
   }, [isFinished, animeId, animeData, setFinishedList]);
 
+  // Update the total episode count whenever new episodes are loaded
+  // helps with new episode releases
   useEffect(() => {
     // Check if data and animeId are available
     if (data && animeId) {
@@ -192,6 +205,7 @@ export default function AnimeId() {
         <h1 className="text-center">Next Episode: {nextEpisode.title}</h1>
       )}
       <div className="grid grid-cols-2 sm:grid-cols-4 text-wrap min-h-full w-full h-full">
+        {/* Map over all episodes and render an EpisodeItem for each one */}
         {data?.pages.flatMap((page) => page.data).map((episode) => (
           <EpisodeItem
             key={episode.mal_id}
@@ -201,6 +215,7 @@ export default function AnimeId() {
           />
         ))}
       </div>
+      {/* Show loading spinner if fetching next page */}
       {isFetchingNextPage && (
         <div className="flex justify-center items-center w-full">
           <ClipLoader color="#ffffff" loading={true} size={150} />
