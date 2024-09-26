@@ -1,11 +1,10 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import { TimerButtons } from "@/things/TimerButtons";
 
 interface Props {
   handleStart: () => void;
   handleStop: () => void;
-  handleReset: () => void;
   isPlaying: boolean;
   duration: number;
 }
@@ -13,19 +12,27 @@ interface Props {
 const MyTimer = ({
   handleStart,
   handleStop,
-  handleReset,
   isPlaying,
   duration,
 }: Props) => {
   const [timer, setTimer] = useState(duration);
-  const [keyChange, setKeyChange] = useState(false);
   const [isActive, setIsActive] = useState(isPlaying);
 
-  const formatTime = useCallback((remainingTime: number) => {
+  // Update timer state when duration prop changes
+  useEffect(() => {
+    setTimer(duration);
+  }, [duration]);
+
+  // Update isActive state when isPlaying prop changes
+  useEffect(() => {
+    setIsActive(isPlaying);
+  }, [isPlaying]);
+
+  function formatTime(remainingTime: number) {
     const minutes = Math.floor(remainingTime / 60);
     const seconds = remainingTime % 60;
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  }, []);
+  }
 
   const handleTimerComplete = () => {
     setIsActive(false);
@@ -33,15 +40,12 @@ const MyTimer = ({
 
   const handleStartTimer = () => {
     setIsActive(true);
+    handleStart();
   };
 
   const handleStopTimer = () => {
     setIsActive(false);
-  };
-
-  const handleResetTimer = () => {
-    setTimer(duration);
-    setKeyChange(!keyChange);
+    handleStop();
   };
 
   return (
@@ -64,7 +68,6 @@ const MyTimer = ({
       <TimerButtons
         handleStart={handleStartTimer}
         handleStop={handleStopTimer}
-        handleReset={handleResetTimer}
       />
     </div>
   );

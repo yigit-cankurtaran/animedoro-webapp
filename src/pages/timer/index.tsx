@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { successToast, errorToast } from "@/things/Toast";
 import { useForm, SubmitHandler } from "react-hook-form";
 import MyTimer from "@/things/MyTimer";
@@ -14,6 +14,7 @@ type FormInputs = {
 export default function Timer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [time, setTime] = useState(20 * 60);
+  const [initialTime, setInitialTime] = useState(20 * 60); // Store initial time
   const [episodeToWatch, setEpisodeToWatch] = useAtom(nextEpisodeAtom);
   const [watchList] = useAtom(watchListAtom);
 
@@ -46,20 +47,15 @@ export default function Timer() {
       return;
     }
     setIsPlaying(false);
+    setTime(initialTime); // Reset timer to initial duration
     successToast("Stop");
-    return { shouldRepeat: false, delay: 1 };
-  }
-
-  function handleReset() {
-    setIsPlaying(false);
-    successToast("Reset");
-    handleStart();
   }
 
   const onSubmit: SubmitHandler<FormInputs> = (data) => {
-    setTime(data.time * 60);
+    const newTime = data.time * 60;
+    setTime(newTime);
+    setInitialTime(newTime); // Update initial time
     successToast(`Time set to ${data.time} minutes`);
-    // minutes to seconds
   };
 
   return (
@@ -84,7 +80,6 @@ export default function Timer() {
 
       <div className="flex flex-col items-center ">
         <MyTimer
-          handleReset={handleReset}
           handleStart={handleStart}
           handleStop={handleStop}
           isPlaying={isPlaying}
