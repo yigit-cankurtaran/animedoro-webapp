@@ -84,5 +84,3 @@ export function AnimeCard({ anime }: AnimeCardProps) {
     </div>
   );
 }
-
-// TODO: implement a plus button that watches the next episode

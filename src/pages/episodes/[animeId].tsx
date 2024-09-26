@@ -1,3 +1,7 @@
+// TODO: when an anime is added to the watchlist download all the episodes
+// TODO: check if there's a new page of episodes when the user accesses the page
+// TODO: refetch the final page of episodes when the user accesses the page
+
 // Import necessary dependencies and components
 import { useRouter } from "next/router";
 import { ClipLoader } from "react-spinners";
@@ -9,8 +13,6 @@ import { useEpisodes } from "@/hooks/useEpisodes";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { EpisodeItem } from "@/things/EpisodeItem";
 import Anime from "@/constants/Anime";
-import { fetchEpisodes } from "@/utils/episodeUtils";
-import Episode from "@/constants/Episode";
 import { addToWatchlist, removeFromWatchlist } from '@/utils/watchlistUtils';
 
 export default function AnimeId() {
