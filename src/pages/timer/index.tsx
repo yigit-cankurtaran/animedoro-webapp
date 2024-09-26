@@ -3,10 +3,10 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { useAtom } from "jotai";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import { successToast, errorToast } from "@/things/Toast";
-import { nextEpisodeAtom } from "@/atoms/episodeAtoms";
-import { watchListAtom } from "@/atoms/animeAtoms";
+import { watchListAtom, finishedListAtom } from "@/atoms/animeAtoms";
 import Anime from "@/constants/Anime";
 import Link from 'next/link';
+import { nextEpisodeAtom, watchedEpisodesAtom, totalEpisodesAtom } from "@/atoms/episodeAtoms";
 
 type FormInputs = {
   time: number;
@@ -22,10 +22,11 @@ export default function Timer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [key, setKey] = useState(0); // Add a key state to force re-render of timer
   // we need this for the stop button to work
-  
-  const [episodeToWatch] = useAtom(nextEpisodeAtom);
-  const [watchList] = useAtom(watchListAtom);
-
+  const [episodeToWatch, setEpisodeToWatch] = useAtom(nextEpisodeAtom);
+  const [watchList, setWatchList] = useAtom(watchListAtom);
+  const [finishedList, setFinishedList] = useAtom(finishedListAtom);
+  const [watchedEpisodes, setWatchedEpisodes] = useAtom(watchedEpisodesAtom);
+  const [totalEpisodes] = useAtom(totalEpisodesAtom);
   const { register, handleSubmit } = useForm<FormInputs>();
 
   // lookup table for anime titles
@@ -35,6 +36,40 @@ export default function Timer() {
       return acc;
     }, {} as Record<number, string>);
   }, [watchList]);
+
+  const watchEpisode = (animeId: number, episodeId: number) => {
+    // mark episode as watched
+    setWatchedEpisodes(prevEpisodes => ({ ...prevEpisodes, [animeId]: [...(prevEpisodes[animeId] || []), episodeId] }));
+    successToast(`Watched episode ${episodeId} of ${animeTitles[animeId]}`);
+
+    // get the next episode
+    const nextEpisodeId = episodeId + 1;
+
+    // check if this was the last episode
+    if (totalEpisodes[animeId] === episodeId) {
+      const animeToMove = watchList.find((anime: Anime) => anime.mal_id === animeId);
+      if (animeToMove) {
+        setWatchList((prev: Anime[]) => prev.filter((anime: Anime) => anime.mal_id !== animeId));
+        setFinishedList((prev: Anime[]) => [...prev, animeToMove]);
+        setEpisodeToWatch(prev => {
+          const newState = { ...prev };
+          delete newState[animeId];
+          return newState;
+        });
+      }
+    } else {
+      // Keep the existing title if available, otherwise use a generic title
+      const currentEpisode = episodeToWatch[animeId];
+      const nextEpisodeTitle = currentEpisode && currentEpisode.id === episodeId 
+        ? `Episode ${nextEpisodeId}`  // We don't know the next episode's title, so use a generic one
+        : currentEpisode.title;  // Keep the existing title if we're not moving to the next episode
+
+      setEpisodeToWatch(prev => ({ 
+        ...prev, 
+        [animeId]: { id: nextEpisodeId, title: nextEpisodeTitle } 
+      }));
+    }
+  };
 
   // start the timer
   const handleStart = useCallback(() => {
@@ -132,13 +167,18 @@ export default function Timer() {
         <p className="font-bold mb-2">Next Episode:</p>
         <div className="flex flex-col items-center text-center">
           {Object.entries(episodeToWatch).map(([animeId, episode]) => (
-            <p key={animeId}>
-              <Link href={`/episodes/${animeId}`} className="font-semibold hover:underline text-blue-500">{animeTitles[Number(animeId)] || animeId}:</Link> 
-              <br />
-              {episode.id} - {episode.title}
-              {/* TODO: implement a button that watches the episode */}
-
-            </p>
+            <div key={animeId}>
+              <p>
+                <Link href={`/episodes/${animeId}`} className="font-semibold hover:underline text-blue-500">
+                  {animeTitles[Number(animeId)] || animeId}
+                </Link> 
+                <br />
+                {episode.id} - {episode.title}
+                <button className="bg-blue-500 text-white p-1 rounded-md ml-2" onClick={() => watchEpisode(Number(animeId), episode.id)}>
+                  +
+                </button>
+              </p>
+            </div>
           ))}
         </div>
       </div>
