@@ -42,11 +42,15 @@ export default function Timer() {
     setWatchedEpisodes(prevEpisodes => ({ ...prevEpisodes, [animeId]: [...(prevEpisodes[animeId] || []), episodeId] }));
     successToast(`Watched episode ${episodeId} of ${animeTitles[animeId]}`);
 
-    // get the next episode
-    const nextEpisodeId = episodeId + 1;
+    const animeEpisodes = episodeToWatch[animeId]?.allEpisodes || [];
+    const nextEpisode = animeEpisodes.find(ep => ep.id > episodeId);
 
-    // check if this was the last episode
-    if (totalEpisodes[animeId] === episodeId) {
+    if (nextEpisode) {
+      setEpisodeToWatch(prev => ({
+        ...prev,
+        [animeId]: { ...prev[animeId], id: nextEpisode.id, title: nextEpisode.title }
+      }));
+    } else {
       const animeToMove = watchList.find((anime: Anime) => anime.mal_id === animeId);
       if (animeToMove) {
         setWatchList((prev: Anime[]) => prev.filter((anime: Anime) => anime.mal_id !== animeId));
@@ -57,17 +61,6 @@ export default function Timer() {
           return newState;
         });
       }
-    } else {
-      // Keep the existing title if available, otherwise use a generic title
-      const currentEpisode = episodeToWatch[animeId];
-      const nextEpisodeTitle = currentEpisode && currentEpisode.id === episodeId 
-        ? `Episode ${nextEpisodeId}`  // We don't know the next episode's title, so use a generic one
-        : currentEpisode.title;  // Keep the existing title if we're not moving to the next episode
-
-      setEpisodeToWatch(prev => ({ 
-        ...prev, 
-        [animeId]: { id: nextEpisodeId, title: nextEpisodeTitle } 
-      }));
     }
   };
 
@@ -166,16 +159,18 @@ export default function Timer() {
         {/* next episode details */}
         <p className="font-bold mb-2">Next Episode:</p>
         <div className="flex flex-col items-center text-center">
-          {Object.entries(episodeToWatch).map(([animeId, episode]) => (
+          {Object.entries(episodeToWatch).map(([animeId, episodeInfo]) => (
             <div key={animeId}>
               <p>
                 <Link href={`/episodes/${animeId}`} className="font-semibold hover:underline text-blue-500">
                   {animeTitles[Number(animeId)] || animeId}
                 </Link> 
                 <br />
-                {episode.id} - {episode.title}
-                <button className="bg-blue-500 text-white p-1 rounded-md ml-2" onClick={() => watchEpisode(Number(animeId), episode.id)}>
+                {episodeInfo.id} - {episodeInfo.title}
+                <button className="bg-blue-500 text-white p-1 rounded-md ml-2" onClick={() => watchEpisode(Number(animeId), episodeInfo.id)}>
                   +
+                  {/* had a weird thing where this deleted the anime from the watch list */}
+                  {/* but it's working now?? keep an eye out nonetheless */}
                 </button>
               </p>
             </div>

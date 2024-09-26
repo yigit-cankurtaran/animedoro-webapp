@@ -82,10 +82,18 @@ export default function AnimeId() {
 
   // Set the next episode to watch only if the anime is not in the finished list
   useEffect(() => {
-    if (nextEpisode && animeId && !isInFinishedList) {
+    if (data && animeId && !isInFinishedList) {
+      const allEpisodes = data.pages.flatMap((page) => page.data);
+      const animeWatched = watchedEpisodes[animeId as string] || [];
+      const nextUnwatchedEpisode = allEpisodes.find((episode) => !animeWatched.includes(episode.mal_id));
+      
       setEpisodeToWatch(prev => ({
         ...prev,
-        [animeId as string]: { id: nextEpisode.mal_id, title: nextEpisode.title }
+        [animeId as string]: { 
+          id: nextUnwatchedEpisode ? nextUnwatchedEpisode.mal_id : 0, 
+          title: nextUnwatchedEpisode ? nextUnwatchedEpisode.title : '',
+          allEpisodes: allEpisodes.map(ep => ({ id: ep.mal_id, title: ep.title }))
+        }
       }));
     } else if (isInFinishedList) {
       // Remove the next episode information if the anime is in the finished list
@@ -96,7 +104,7 @@ export default function AnimeId() {
         return newState;
       });
     }
-  }, [nextEpisode, setEpisodeToWatch, animeId, isInFinishedList]);
+  }, [data, watchedEpisodes, setEpisodeToWatch, animeId, isInFinishedList]);
 
   // Get all episodes
   const allEpisodes = useMemo(() => {
@@ -183,3 +191,7 @@ export default function AnimeId() {
 }
 
 // This component is used to display the episodes of an anime
+
+// TODO: the episode count doesn't update when new episodes are released
+// e.g. one piece is still stuck on 1119 even though 1120 released
+// look into this and fix it, implement a refetch maybe?
