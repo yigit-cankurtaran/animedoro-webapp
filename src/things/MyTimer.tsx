@@ -4,14 +4,14 @@ import { TimerButtons } from "@/things/TimerButtons";
 
 interface Props {
   handleStart: () => void;
-  handleStop: () => void;
+  handlePause: () => void;
   isPlaying: boolean;
   duration: number;
 }
 
 const MyTimer = ({
   handleStart,
-  handleStop,
+  handlePause,
   isPlaying,
   duration,
 }: Props) => {
@@ -43,9 +43,9 @@ const MyTimer = ({
     handleStart();
   };
 
-  const handleStopTimer = () => {
+  const handlePauseTimer = () => {
     setIsActive(false);
-    handleStop();
+    handlePause();
   };
 
   return (
@@ -67,7 +67,7 @@ const MyTimer = ({
       </CountdownCircleTimer>
       <TimerButtons
         handleStart={handleStartTimer}
-        handleStop={handleStopTimer}
+        handlePause={handlePauseTimer}
       />
     </div>
   );

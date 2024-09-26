@@ -12,9 +12,9 @@ type FormInputs = {
 };
 
 export default function Timer() {
+  const defaultTime = 40 * 60;
   const [isPlaying, setIsPlaying] = useState(false);
-  const [time, setTime] = useState(20 * 60);
-  const [initialTime, setInitialTime] = useState(20 * 60); // Store initial time
+  const [time, setTime] = useState(defaultTime);
   const [episodeToWatch, setEpisodeToWatch] = useAtom(nextEpisodeAtom);
   const [watchList] = useAtom(watchListAtom);
 
@@ -41,20 +41,18 @@ export default function Timer() {
     successToast("Start");
   }
 
-  function handleStop() {
+  function handlePause() {
     if (!isPlaying) {
       errorToast("Not playing");
       return;
     }
     setIsPlaying(false);
-    setTime(initialTime); // Reset timer to initial duration
     successToast("Stop");
+    return { shouldRepeat: false, delay: 1 };
   }
 
   const onSubmit: SubmitHandler<FormInputs> = (data) => {
-    const newTime = data.time * 60;
-    setTime(newTime);
-    setInitialTime(newTime); // Update initial time
+    setTime(data.time * 60);
     successToast(`Time set to ${data.time} minutes`);
   };
 
@@ -81,7 +79,7 @@ export default function Timer() {
       <div className="flex flex-col items-center ">
         <MyTimer
           handleStart={handleStart}
-          handleStop={handleStop}
+          handlePause={handlePause}
           isPlaying={isPlaying}
           duration={time}
         />
@@ -103,6 +101,8 @@ export default function Timer() {
     </div>
   );
 }
+
+// TODO: implement stop function that resets the timer
 
 // TODO: implement a break timer as well
 // TODO: add a solution to watch the episode
