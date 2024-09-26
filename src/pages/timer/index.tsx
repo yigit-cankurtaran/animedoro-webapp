@@ -6,6 +6,7 @@ import { successToast, errorToast } from "@/things/Toast";
 import { nextEpisodeAtom } from "@/atoms/episodeAtoms";
 import { watchListAtom } from "@/atoms/animeAtoms";
 import Anime from "@/constants/Anime";
+import Link from 'next/link';
 
 type FormInputs = {
   time: number;
@@ -132,9 +133,11 @@ export default function Timer() {
         <div className="flex flex-col items-center text-center">
           {Object.entries(episodeToWatch).map(([animeId, episode]) => (
             <p key={animeId}>
-              <span className="font-semibold">{animeTitles[Number(animeId)] || animeId}:</span> 
+              <Link href={`/episodes/${animeId}`} className="font-semibold hover:underline text-blue-500">{animeTitles[Number(animeId)] || animeId}:</Link> 
               <br />
               {episode.id} - {episode.title}
+              {/* TODO: implement a button that watches the episode */}
+
             </p>
           ))}
         </div>
