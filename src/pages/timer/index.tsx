@@ -102,7 +102,6 @@ export default function Timer() {
           handleReset={handleReset}
           handleStart={handleStart}
           handleStop={handleStop}
-          key={key}
           isPlaying={isPlaying}
           duration={time}
         />

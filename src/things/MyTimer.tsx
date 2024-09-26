@@ -7,7 +7,6 @@ interface Props {
   handleStop: () => void;
   handleReset: () => void;
   isPlaying: boolean;
-  key: number;
   duration: number;
 }
 
@@ -16,10 +15,8 @@ const MyTimer = ({
   handleStop,
   handleReset,
   isPlaying,
-  key,
   duration,
 }: Props) => {
-  const [timerKey, setTimerKey] = useState(key);
   const [timer, setTimer] = useState(duration);
   const [keyChange, setKeyChange] = useState(false);
   const [isActive, setIsActive] = useState(isPlaying);
@@ -31,7 +28,6 @@ const MyTimer = ({
   }, []);
 
   const handleTimerComplete = () => {
-    setTimerKey(key);
     setIsActive(false);
   };
 
@@ -58,7 +54,6 @@ const MyTimer = ({
         colorsTime={[10, 5, 2]}
         strokeWidth={10}
         onComplete={handleTimerComplete}
-        key={timerKey}
       >
         {({ remainingTime }) => (
           <div className="flex flex-col justify-center items-center">
