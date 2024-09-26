@@ -94,15 +94,28 @@ const fetchAllPagesAndSetTotalEpisodes = useCallback(async () => {
     return null;
   }, [watchedEpisodes, data, animeId]);
 
-  // Set the next episode to watch
+  // Check if the anime is in the finished list
+  const isInFinishedList = useMemo(() => {
+    return finishedList.some(anime => anime.mal_id === parseInt(animeId as string, 10));
+  }, [finishedList, animeId]);
+
+  // Set the next episode to watch only if the anime is not in the finished list
   useEffect(() => {
-    if (nextEpisode && animeId) {
+    if (nextEpisode && animeId && !isInFinishedList) {
       setEpisodeToWatch(prev => ({
         ...prev,
         [animeId as string]: { id: nextEpisode.mal_id, title: nextEpisode.title }
       }));
+    } else if (isInFinishedList) {
+      // Remove the next episode information if the anime is in the finished list
+      // if we don't do this, the final episode will be shown as the next episode to watch
+      setEpisodeToWatch(prev => {
+        const newState = { ...prev };
+        delete newState[animeId as string];
+        return newState;
+      });
     }
-  }, [nextEpisode, setEpisodeToWatch, animeId]);
+  }, [nextEpisode, setEpisodeToWatch, animeId, isInFinishedList]);
 
   // Get all episodes
   const allEpisodes = useMemo(() => {
@@ -168,7 +181,7 @@ const fetchAllPagesAndSetTotalEpisodes = useCallback(async () => {
     <div>
       <h1 className="text-center">The anime is {isFinished ? "finished" : "not finished"}</h1>
       <h2 className="text-center">Watched Episodes: {watchedCount} / {totalCount}</h2>
-      {!isFinished && nextEpisode && (
+      {!isFinished && nextEpisode && !isInFinishedList && (
         <h1 className="text-center">Next Episode: {nextEpisode.title}</h1>
       )}
       <div className="grid grid-cols-2 sm:grid-cols-4 text-wrap min-h-full w-full h-full">
