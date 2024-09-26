@@ -7,6 +7,7 @@ import { watchListAtom, finishedListAtom } from "@/atoms/animeAtoms";
 import Anime from "@/constants/Anime";
 import Link from 'next/link';
 import { nextEpisodeAtom, watchedEpisodesAtom, totalEpisodesAtom } from "@/atoms/episodeAtoms";
+import { fetchEpisodes } from "@/utils/episodeUtils";
 
 type FormInputs = {
   time: number;
@@ -37,16 +38,39 @@ export default function Timer() {
     }, {} as Record<number, string>);
   }, [watchList]);
 
-  const watchEpisode = (animeId: number, episodeId: number) => {
+  const watchEpisode = async (animeId: number, episodeId: number) => {
     // Mark episode as watched
-    setWatchedEpisodes(prevEpisodes => ({ 
-      ...prevEpisodes, 
-      [animeId]: [...(prevEpisodes[animeId] || []), episodeId] 
-    }));
+    setWatchedEpisodes(prevEpisodes => {
+      const updatedEpisodes = [...(prevEpisodes[animeId] || []), episodeId];
+      return { ...prevEpisodes, [animeId]: updatedEpisodes };
+    });
     successToast(`Watched episode ${episodeId} of ${animeTitles[animeId]}`);
 
-    const animeEpisodes = episodeToWatch[animeId]?.allEpisodes || [];
-    const nextEpisode = animeEpisodes.find(ep => ep.id > episodeId);
+    const watchedCount = (watchedEpisodes[animeId] || []).length + 1; // +1 for the episode we just watched
+
+    // Fetch next page if needed
+    if (watchedCount % 100 === 0) {
+      console.log("Fetching next page of episodes");
+      try {
+        const nextPage = Math.floor(watchedCount / 100) + 1;
+        const { data } = await fetchEpisodes(animeId.toString(), nextPage);
+        
+        // Update episodeToWatch with new episodes
+        setEpisodeToWatch(prev => ({
+          ...prev,
+          [animeId]: {
+            ...prev[animeId],
+            allEpisodes: [...prev[animeId].allEpisodes, ...data.map((ep: { mal_id: number, title: string }) => ({ id: ep.mal_id, title: ep.title }))]
+          }
+        }));
+      } catch (error) {
+        console.error("Failed to fetch next page of episodes:", error);
+      }
+    }
+
+    // Find the next episode using the potentially updated allEpisodes
+    const updatedAnimeEpisodes = episodeToWatch[animeId]?.allEpisodes || [];
+    const nextEpisode = updatedAnimeEpisodes.find(ep => ep.id > episodeId);
 
     if (nextEpisode) {
       // Update to the next episode
@@ -59,8 +83,6 @@ export default function Timer() {
       setEpisodeToWatch(prev => ({
         ...prev,
         [animeId]: { ...prev[animeId], id: episodeId + 1, title: `Episode ${episodeId + 1}` }
-        // if we don't have info about the next episode, we just assume the next episode is the next number in the series
-        // this might not work for all anime, but it's good enough for now
       }));
     } else {
       // This was the last episode
@@ -182,8 +204,6 @@ export default function Timer() {
                 {episodeInfo.id} - {episodeInfo.title}
                 <button className="bg-blue-500 text-white p-1 rounded-md ml-2" onClick={() => watchEpisode(Number(animeId), episodeInfo.id)}>
                   +
-                  {/* had a weird thing where this deleted the anime from the watch list */}
-                  {/* but it's working now?? keep an eye out nonetheless */}
                 </button>
               </p>
             </div>

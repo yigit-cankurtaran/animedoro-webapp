@@ -115,16 +115,8 @@ export default function AnimeId() {
       const animeWatched = watchedEpisodes[animeId as string] || [];
       const allWatched = allEpisodes.every((episode) => animeWatched.includes(episode.mal_id));
       setIsFinished(allWatched);
-
-      if (allWatched && animeData) {
-        // Check if the anime is in the watchlist before removing it
-        const isInWatchlist = watchList.some(anime => anime.mal_id === animeData.mal_id);
-        if (isInWatchlist) {
-          removeFromWatchlist(animeData as Anime, setWatchList);
-        }
-      }
     }
-  }, [watchedEpisodes, data, animeId, animeData, setWatchList, watchList]);
+  }, [watchedEpisodes, data, animeId]);
 
   // Update the total episode count whenever new episodes are loaded
   // helps with new episode releases
@@ -141,20 +133,23 @@ export default function AnimeId() {
   // if all episodes are watched, add the anime to the finished list
   useEffect(() => {
     if (isFinished && animeId && animeData) {
-      setFinishedList(prev => {
-        // Convert animeId from string to integer
-        const id = parseInt(animeId as string, 10);
-        // Check if the conversion to integer was successful and if the anime is already in the finished list
-        if (isNaN(id) || prev.some(anime => anime.mal_id === id)) return prev;
-        // If the anime is not in the finished list, add it with finished and watching status updated
-        return [...prev, {
-          ...animeData,
-          finished: true,
-          watching: false
-        } as Anime];
-      });
+      const allEpisodes = data?.pages.flatMap((page) => page.data) || [];
+      const animeWatched = watchedEpisodes[animeId as string] || [];
+      const allActuallyWatched = allEpisodes.every((episode) => animeWatched.includes(episode.mal_id));
+
+      if (allActuallyWatched) {
+        setFinishedList(prev => {
+          const id = parseInt(animeId as string, 10);
+          if (isNaN(id) || prev.some(anime => anime.mal_id === id)) return prev;
+          return [...prev, {
+            ...animeData,
+            finished: true,
+            watching: false
+          } as Anime];
+        });
+      }
     }
-  }, [isFinished, animeId, animeData, setFinishedList]);
+  }, [isFinished, animeId, animeData, setFinishedList, data, watchedEpisodes]);
 
   // if the anime isn't finished, remove it from the finished list
   useEffect(() => {
