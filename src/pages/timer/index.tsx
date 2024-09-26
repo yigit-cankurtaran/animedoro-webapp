@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useAtom } from "jotai";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
@@ -7,27 +7,27 @@ import { nextEpisodeAtom } from "@/atoms/episodeAtoms";
 import { watchListAtom } from "@/atoms/animeAtoms";
 import Anime from "@/constants/Anime";
 
-// Define the type for the form inputs
 type FormInputs = {
   time: number;
 };
 
-// Constants for time conversion
 const SECONDS_PER_MINUTE = 60;
-const DEFAULT_TIME = 40 * SECONDS_PER_MINUTE; // 40 minutes in seconds
+const DEFAULT_TIME = 40 * SECONDS_PER_MINUTE;
 
 export default function Timer() {
-  // State for timer duration and play state
-  const [duration, setDuration] = useState(DEFAULT_TIME);
+  // Keep track of both the initial duration and the current duration
+  const [initialDuration, setInitialDuration] = useState(DEFAULT_TIME);
+  const [currentDuration, setCurrentDuration] = useState(DEFAULT_TIME);
   const [isPlaying, setIsPlaying] = useState(false);
-  // Use atoms for next episode and watch list
+  const [key, setKey] = useState(0); // Add a key state to force re-render of timer
+  // we need this for the stop button to work
+  
   const [episodeToWatch] = useAtom(nextEpisodeAtom);
   const [watchList] = useAtom(watchListAtom);
 
-  // Setup form with react-hook-form
   const { register, handleSubmit } = useForm<FormInputs>();
 
-  // Memoize anime titles for easy access
+  // lookup table for anime titles
   const animeTitles = React.useMemo(() => {
     return watchList.reduce((acc, anime: Anime) => {
       acc[anime.mal_id] = anime.title_english || anime.title_japanese || 'Unknown';
@@ -35,7 +35,7 @@ export default function Timer() {
     }, {} as Record<number, string>);
   }, [watchList]);
 
-  // Callback for starting the timer
+  // start the timer
   const handleStart = useCallback(() => {
     if (isPlaying) {
       errorToast("Already playing");
@@ -45,31 +45,35 @@ export default function Timer() {
     successToast("Start");
   }, [isPlaying]);
 
-  // Callback for pausing the timer
+  // pause the timer
   const handlePause = useCallback(() => {
     if (!isPlaying) {
       errorToast("Not playing");
       return;
     }
     setIsPlaying(false);
-    successToast("Stop");
+    successToast("Pause");
   }, [isPlaying]);
 
-  // Callback for resetting the timer
-  const handleReset = useCallback(() => {
+  // stop the timer and reset it
+  const handleStop = useCallback(() => {
     setIsPlaying(false);
-    setDuration(DEFAULT_TIME);
-    successToast("Timer reset");
-  }, []);
+    setCurrentDuration(initialDuration); // Reset to initial duration
+    setKey(prevKey => prevKey + 1); // Increment key to force re-render
+    successToast("Timer stopped and reset");
+  }, [initialDuration]);
 
-  // Form submission handler
+  // set the timer to a new duration
+  // gets the time from the form and converts it to seconds
   const onSubmit: SubmitHandler<FormInputs> = (data) => {
     const newDuration = data.time * SECONDS_PER_MINUTE;
-    setDuration(newDuration);
+    setInitialDuration(newDuration);
+    setCurrentDuration(newDuration);
+    setKey(prevKey => prevKey + 1); // Force re-render when duration changes
     successToast(`Time set to ${data.time} minutes`);
   };
 
-  // Function to format time in minutes and seconds
+  // format the time to be displayed in the timer
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
     const seconds = time % 60;
@@ -91,11 +95,11 @@ export default function Timer() {
       </form>
 
       <div className="flex flex-col items-center">
-        {/* Timer component */}
+        {/* the timer */}
         <CountdownCircleTimer
-          key={duration}
+          key={key} // Use key to force re-render
           isPlaying={isPlaying}
-          duration={duration}
+          duration={currentDuration}
           colors={["#004777", "#F7B825", "#A30000"]}
           colorsTime={[10, 5, 2]}
           onComplete={() => {
@@ -108,22 +112,22 @@ export default function Timer() {
           )}
         </CountdownCircleTimer>
 
-        {/* Timer control buttons */}
         <div className="flex gap-4 mt-4">
+          {/* start the timer */}
           <button onClick={handleStart} className="bg-green-500 text-white p-2 rounded-md">
             Start
           </button>
           <button onClick={handlePause} className="bg-yellow-500 text-white p-2 rounded-md">
             Pause
           </button>
-          <button onClick={handleReset} className="bg-red-500 text-white p-2 rounded-md">
-            Reset
+          <button onClick={handleStop} className="bg-red-500 text-white p-2 rounded-md">
+            Stop
           </button>
         </div>
       </div>
 
       <div className="flex flex-col items-center">
-        {/* Display next episode details */}
+        {/* next episode details */}
         <p className="font-bold mb-2">Next Episode:</p>
         <div className="flex flex-col items-center text-center">
           {Object.entries(episodeToWatch).map(([animeId, episode]) => (
