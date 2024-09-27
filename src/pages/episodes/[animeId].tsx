@@ -1,5 +1,5 @@
 // TODO: when an anime is added to the watchlist download all the episodes
-// TODO: check if there's a new page of episodes when the user accesses the page
+// TODO: check if there's a new page of episodes when the user accesses the page or clicks the plus button
 // TODO: refetch the final page of episodes when the user accesses the page
 
 // Import necessary dependencies and components
