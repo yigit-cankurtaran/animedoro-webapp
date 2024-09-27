@@ -14,8 +14,11 @@ export function saveWatchedEpisodes(animeId: string, watchedEpisodes: { [key: nu
   
 // Remove time from date string
 export function removeTandAfter(date: string) {
+  if (date) {
     return date.split("T")[0];
   }
+  return "";
+}
   
 // Fetch episodes from API
 export async function fetchEpisodes(animeId: string, page: number) {
