@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchEpisodes } from "@/utils/episodeUtils";
 import { useEffect } from "react";
+import { fetchEpisodes } from "@/utils/episodeUtils";
 import Episode from "@/constants/Episode";
 import Anime from "@/constants/Anime";
 
@@ -43,7 +43,7 @@ export function useEpisodes(animeId: string | undefined) {
     enabled: !!animeId,
   });
 
-   // Refetch the final page of episodes and check for new pages if needed
+  // Refetch the final page of episodes and check for new pages if needed
   useEffect(() => {
     if (animeId && episodesQuery.data) {
       const lastPage = episodesQuery.data.pages[episodesQuery.data.pages.length - 1];
@@ -55,7 +55,18 @@ export function useEpisodes(animeId: string | undefined) {
         });
       }
     }
-  }, [animeId, episodesQuery.data, queryClient]); 
+  }, [animeId, episodesQuery.data, queryClient]);
+
+  // Ensure all pages are fetched before determining if the anime is finished
+  useEffect(() => {
+    if (animeId && episodesQuery.data) {
+      const lastPage = episodesQuery.data.pages[episodesQuery.data.pages.length - 1];
+      if (lastPage.pagination.has_next_page) {
+        // Fetch the next page if there are more pages
+        episodesQuery.fetchNextPage();
+      }
+    }
+  }, [animeId, episodesQuery.data, episodesQuery.fetchNextPage]);
 
   return {
     episodes: episodesQuery,
