@@ -13,6 +13,10 @@ function settings() {
     </div>
   );
   // TODO: make a proper settings page
+  // we can use jotai to store the settings globally
+  // release after settings is done
+  // or just skip this for now maybe?
+  // later on we can add a light-dark mode switch or something
 }
 
 export default settings;

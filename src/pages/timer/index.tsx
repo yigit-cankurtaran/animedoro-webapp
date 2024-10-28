@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useAtom } from "jotai";
 import { watchListAtom, finishedListAtom } from "@/atoms/animeAtoms";
 import Anime from "@/constants/Anime";
@@ -59,7 +59,7 @@ export default function Timer() {
         const nextPage = Math.floor(watchedCount / 100) + 1;
         // Fetch the next page of episodes
         const { data } = await fetchEpisodes(animeId.toString(), nextPage);
-        
+
         // Update episodeToWatch with new episodes
         setEpisodeToWatch(prev => ({
           ...prev,
@@ -106,24 +106,24 @@ export default function Timer() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-8 p-4">
-      <TimerForm 
+      <TimerForm
         setInitialDuration={setInitialDuration}
         setCurrentDuration={setCurrentDuration}
         setKey={setKey}
       />
 
       <div className="flex flex-col items-center">
-        <TimerDisplay 
+        <TimerDisplay
           key={key}
           isPlaying={isPlaying}
           currentDuration={currentDuration}
           setIsPlaying={setIsPlaying}
-          // TODO: create a rest timer as well
-          // default time is gonna be 20 minutes.
-          // different colors for the timer
+        // TODO: create a rest timer as well
+        // default time is gonna be 20 minutes.
+        // different colors for the timer
         />
 
-        <TimerControls 
+        <TimerControls
           isPlaying={isPlaying}
           setIsPlaying={setIsPlaying}
           initialDuration={initialDuration}
@@ -132,7 +132,7 @@ export default function Timer() {
         />
       </div>
 
-      <EpisodeList 
+      <EpisodeList
         episodeToWatch={episodeToWatch}
         animeTitles={animeTitles}
         watchEpisode={watchEpisode}
