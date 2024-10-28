@@ -1,5 +1,6 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchEpisodes } from "@/utils/episodeUtils";
+import { useEffect } from "react";
 import Episode from "@/constants/Episode";
 import Anime from "@/constants/Anime";
 
@@ -11,6 +12,8 @@ async function fetchAnimeDetails(animeId: string): Promise<Anime> {
 }
 
 export function useEpisodes(animeId: string | undefined) {
+  const queryClient = useQueryClient();
+
   const episodesQuery = useInfiniteQuery<{
     data: Episode[];
     pagination: {
@@ -39,6 +42,20 @@ export function useEpisodes(animeId: string | undefined) {
     queryFn: () => fetchAnimeDetails(animeId as string),
     enabled: !!animeId,
   });
+
+   // Refetch the final page of episodes and check for new pages if needed
+  useEffect(() => {
+    if (animeId && episodesQuery.data) {
+      const lastPage = episodesQuery.data.pages[episodesQuery.data.pages.length - 1];
+      if (lastPage.data.length === 100 && lastPage.pagination.has_next_page) {
+        // Fetch the next page if the last page has exactly 100 episodes
+        queryClient.fetchQuery({
+          queryKey: ["episodes", animeId, lastPage.pagination.last_visible_page + 1],
+          queryFn: () => fetchEpisodes(animeId, lastPage.pagination.last_visible_page + 1)
+        });
+      }
+    }
+  }, [animeId, episodesQuery.data, queryClient]); 
 
   return {
     episodes: episodesQuery,
