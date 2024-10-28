@@ -7,7 +7,7 @@ import { fetchEpisodes } from "@/utils/episodeUtils";
 import { TimerForm } from '@/things/TimerForm';
 import { TimerDisplay } from '@/things/TimerDisplay';
 import { TimerControls } from '@/things/TimerControls';
-import { EpisodeList } from '@/things/EpisodeList';
+import FilteredEpisodeList from "@/things/FilteredEpisodeList";
 import { successToast } from "@/things/Toast";
 
 const DEFAULT_TIME = 40 * 60; // 40 minutes in seconds
@@ -132,10 +132,11 @@ export default function Timer() {
         />
       </div>
 
-      <EpisodeList
+      <FilteredEpisodeList
         episodeToWatch={episodeToWatch}
         animeTitles={animeTitles}
         watchEpisode={watchEpisode}
+        watchList={watchList}
       />
     </div>
   );

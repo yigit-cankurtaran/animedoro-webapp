@@ -19,6 +19,8 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({ key, isPlaying, curr
   return (
     <CountdownCircleTimer
       key={key} // Use key to force re-render
+      // we can delete this if we want to use the default duration
+      // create two timers, one for work one for rest
       isPlaying={isPlaying}
       duration={currentDuration}
       colors={["#004777", "#F7B825", "#A30000"]}
