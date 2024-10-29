@@ -86,7 +86,7 @@ export default function AnimeId() {
             animeData as Anime,
             watchList,
             setWatchList,
-            setTotalEpisodes
+            setTotalEpisodes,
           );
         }
       }
@@ -234,15 +234,22 @@ export default function AnimeId() {
 
   const watchedCount = watchedEpisodes[animeId as string]?.length || 0;
   const totalCount = totalEpisodes[animeId as string] || 0;
+  const isBeingWatched = watchList.some((anime) => anime.mal_id === parseInt(animeId as string, 10));
+  // checking if the current anime is in the watchlist
+
 
   return (
     <div>
-      <h1 className="text-center">
-        The anime is {isFinished ? "finished" : "not finished"}
-      </h1>
-      <h2 className="text-center">
-        Watched Episodes: {watchedCount} / {totalCount}
-      </h2>
+      {isBeingWatched && (
+        <>
+          <h1 className="text-center">
+            The anime is {isFinished ? "finished" : "not finished"}
+          </h1>
+          <h2 className="text-center">
+            Watched Episodes: {watchedCount} / {totalCount}
+          </h2>
+        </>
+      )}
       {!isFinished && nextEpisode && !isInFinishedList && (
         <h1 className="text-center">Next Episode: {nextEpisode.title}</h1>
       )}
