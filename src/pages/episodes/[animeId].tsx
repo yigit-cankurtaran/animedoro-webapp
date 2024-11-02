@@ -238,22 +238,82 @@ export default function AnimeId() {
   // checking if the current anime is in the watchlist
 
 
+  // return (
+  //   <div>
+  //     {isBeingWatched && (
+  //       <>
+  //         <h1 className="text-center">
+  //           The anime is {isFinished ? "finished" : "not finished"}
+  //         </h1>
+  //         <h2 className="text-center">
+  //           Watched Episodes: {watchedCount} / {totalCount}
+  //         </h2>
+  //       </>
+  //     )}
+  //     {!isFinished && nextEpisode && !isInFinishedList && (
+  //       <h1 className="text-center">Next Episode: {nextEpisode.title}</h1>
+  //     )}
+  //     <div className="grid grid-cols-2 sm:grid-cols-4 text-wrap min-h-full w-full h-full">
+  //       {data?.pages
+  //         .flatMap((page) => page.data)
+  //         .map((episode) => (
+  //           <EpisodeItem
+  //             key={episode.mal_id}
+  //             episode={episode}
+  //             isWatched={
+  //               watchedEpisodes[animeId as string]?.includes(episode.mal_id) ||
+  //               false
+  //             }
+  //             onToggleWatched={handleWatchedToggle}
+  //           />
+  //         ))}
+  //     </div>
+  //     {isFetchingNextPage && (
+  //       <div className="flex justify-center items-center w-full">
+  //         <ClipLoader color="#ffffff" loading={true} size={150} />
+  //       </div>
+  //     )}
+  //   </div>
+  // );
+  //
+
   return (
-    <div>
+    <div className="container mx-auto px-4 py-6 space-y-6">
+      {/* Status Section */}
       {isBeingWatched && (
-        <>
-          <h1 className="text-center">
-            The anime is {isFinished ? "finished" : "not finished"}
-          </h1>
-          <h2 className="text-center">
-            Watched Episodes: {watchedCount} / {totalCount}
-          </h2>
-        </>
+        <div className="bg-slate-700 rounded-lg p-6 shadow-lg space-y-3">
+          <div className="flex items-center justify-center space-x-2">
+            <div className={`w-3 h-3 rounded-full ${isFinished ? 'bg-green-400' : 'bg-blue-400'}`} />
+            <h1 className="text-xl font-semibold">
+              Status: {isFinished ? "Finished" : "In Progress"}
+            </h1>
+          </div>
+          <div className="flex flex-col items-center">
+            <h2 className="text-lg text-slate-300">
+              Progress: {watchedCount} / {totalCount} Episodes
+            </h2>
+            {/* Progress Bar */}
+            <div className="w-full max-w-md h-2 bg-slate-600 rounded-full mt-2">
+              <div
+                className="h-full bg-blue-400 rounded-full transition-all duration-300"
+                style={{ width: `${(watchedCount / totalCount) * 100}%` }}
+              />
+            </div>
+          </div>
+        </div>
       )}
+
+      {/* Next Episode Banner */}
       {!isFinished && nextEpisode && !isInFinishedList && (
-        <h1 className="text-center">Next Episode: {nextEpisode.title}</h1>
+        <div className="bg-blue-400/10 border border-blue-400/20 rounded-lg p-4">
+          <h1 className="text-center text-lg font-medium text-blue-400">
+            Next Episode: {nextEpisode.mal_id} - {nextEpisode.title}
+          </h1>
+        </div>
       )}
-      <div className="grid grid-cols-2 sm:grid-cols-4 text-wrap min-h-full w-full h-full">
+
+      {/* Episodes Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {data?.pages
           .flatMap((page) => page.data)
           .map((episode) => (
@@ -268,11 +328,13 @@ export default function AnimeId() {
             />
           ))}
       </div>
+
+      {/* Loading Spinner */}
       {isFetchingNextPage && (
-        <div className="flex justify-center items-center w-full">
-          <ClipLoader color="#ffffff" loading={true} size={150} />
+        <div className="flex justify-center items-center py-8">
+          <ClipLoader color="#60A5FA" loading={true} size={50} />
         </div>
       )}
     </div>
   );
-}
+};

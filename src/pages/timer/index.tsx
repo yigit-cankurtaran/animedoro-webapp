@@ -123,45 +123,55 @@ export default function Timer() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen gap-8 p-4">
-      <TimerForm
-        setInitialDuration={setWorkDuration}
-        setCurrentDuration={setCurrentWorkDuration}
-        setKey={setKey}
-      />
-
-      <div className="flex flex-col items-center">
-        {isWorkTimer ? (
-          <WorkTimer
-            isPlaying={isPlaying}
-            duration={workDuration}
-            onComplete={handleWorkComplete}
-            timerKey={key}
+    <div className="min-h-screen w-full bg-slate-800 px-4 py-8 md:py-12">
+      <div className="mx-auto max-w-4xl space-y-8">
+        {/* Timer Setup Section */}
+        <div className="rounded-lg bg-slate-900 p-6 shadow-lg">
+          <TimerForm
+            setInitialDuration={setWorkDuration}
+            setCurrentDuration={setCurrentWorkDuration}
+            setKey={setKey}
           />
-        ) : (
-          <RestTimer
-            isPlaying={isPlaying}
-            duration={restDuration}
-            onComplete={handleRestComplete}
-            timerKey={key}
-          />
-        )}
+        </div>
 
-        <TimerControls
-          isPlaying={isPlaying}
-          setIsPlaying={setIsPlaying}
-          initialDuration={isWorkTimer ? workDuration : DEFAULT_REST_TIME}
-          setCurrentDuration={isWorkTimer ? setCurrentWorkDuration : () => { }}
-          setKey={setKey}
-        />
+        {/* Timer Display Section */}
+        <div className="rounded-lg bg-slate-900 p-6 shadow-lg">
+          <div className="flex flex-col items-center space-y-6">
+            {isWorkTimer ? (
+              <WorkTimer
+                isPlaying={isPlaying}
+                duration={workDuration}
+                onComplete={handleWorkComplete}
+                timerKey={key}
+              />
+            ) : (
+              <RestTimer
+                isPlaying={isPlaying}
+                duration={restDuration}
+                onComplete={handleRestComplete}
+                timerKey={key}
+              />
+            )}
+            <TimerControls
+              isPlaying={isPlaying}
+              setIsPlaying={setIsPlaying}
+              initialDuration={isWorkTimer ? workDuration : DEFAULT_REST_TIME}
+              setCurrentDuration={isWorkTimer ? setCurrentWorkDuration : () => { }}
+              setKey={setKey}
+            />
+          </div>
+        </div>
+
+        {/* Episode List Section */}
+        <div className="rounded-lg flex justify-center bg-slate-900 p-6 shadow-lg">
+          <FilteredEpisodeList
+            episodeToWatch={episodeToWatch}
+            animeTitles={animeTitles}
+            watchEpisode={watchEpisode}
+            watchList={watchList}
+          />
+        </div>
       </div>
-
-      <FilteredEpisodeList
-        episodeToWatch={episodeToWatch}
-        animeTitles={animeTitles}
-        watchEpisode={watchEpisode}
-        watchList={watchList}
-      />
     </div>
   );
 }
