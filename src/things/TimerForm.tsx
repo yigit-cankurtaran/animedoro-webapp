@@ -1,6 +1,6 @@
 import React from 'react';
 import { useForm, SubmitHandler } from "react-hook-form";
-import { successToast } from "@/things/Toast";
+import { successToast, errorToast } from "@/things/Toast";
 
 type FormInputs = {
   time: number;
@@ -20,11 +20,13 @@ export const TimerForm: React.FC<TimerFormProps> = ({ setInitialDuration, setCur
   // set the timer to a new duration
   // gets the time from the form and converts it to seconds
   const onSubmit: SubmitHandler<FormInputs> = (data) => {
-    const newDuration = data.time * SECONDS_PER_MINUTE;
-    setInitialDuration(newDuration);
-    setCurrentDuration(newDuration);
-    setKey(prevKey => prevKey + 1); // Force re-render when duration changes
-    successToast(`Time set to ${data.time} minutes`);
+    if (data.time > 0) {
+      const newDuration = data.time * SECONDS_PER_MINUTE;
+      setInitialDuration(newDuration);
+      setCurrentDuration(newDuration);
+      setKey(prevKey => prevKey + 1); // Force re-render when duration changes
+      successToast(`Time set to ${data.time} minutes`);
+    } else errorToast("Please enter a valid number");
   };
 
   return (

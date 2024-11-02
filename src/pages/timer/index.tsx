@@ -12,7 +12,7 @@ import FilteredEpisodeList from "@/things/FilteredEpisodeList";
 import { successToast } from "@/things/Toast";
 
 const DEFAULT_WORK_TIME = 40 * 60; // 40 minutes in seconds
-const DEFAULT_REST_TIME = 1 * 60; // 20 minutes in seconds
+const DEFAULT_REST_TIME = 20 * 60; // 20 minutes in seconds
 
 export default function Timer() {
   // Keep track of both the initial duration and the current duration
