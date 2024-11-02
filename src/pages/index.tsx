@@ -6,9 +6,6 @@ export default function Home() {
       <Link href="/search" className="text-blue-400">
         Search
       </Link>
-      <Link href="/settings" className="text-blue-400">
-        Settings
-      </Link>
       <Link href="/timer" className="text-blue-400">
         Timer
       </Link>
