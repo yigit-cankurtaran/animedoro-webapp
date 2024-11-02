@@ -9,7 +9,7 @@ export default function Watchlist() {
 
   return (
     <div>
-      <h1>Watchlist</h1>
+      <h1 className="text-2xl font-bold justify-self-center mb-4">Watchlist</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {watchlist.map((anime) => (
           <AnimeCard key={anime.mal_id} anime={anime} />
