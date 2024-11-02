@@ -5,18 +5,22 @@ import Anime from "@/constants/Anime";
 import { nextEpisodeAtom, watchedEpisodesAtom, totalEpisodesAtom } from "@/atoms/episodeAtoms";
 import { fetchEpisodes } from "@/utils/episodeUtils";
 import { TimerForm } from '@/things/TimerForm';
-import { TimerDisplay } from '@/things/TimerDisplay';
 import { TimerControls } from '@/things/TimerControls';
+import { WorkTimer } from '@/things/WorkTimer';
+import { RestTimer } from '@/things/RestTimer';
 import FilteredEpisodeList from "@/things/FilteredEpisodeList";
 import { successToast } from "@/things/Toast";
 
-const DEFAULT_TIME = 40 * 60; // 40 minutes in seconds
+const DEFAULT_WORK_TIME = 40 * 60; // 40 minutes in seconds
+const DEFAULT_REST_TIME = 1 * 60; // 20 minutes in seconds
 
 export default function Timer() {
   // Keep track of both the initial duration and the current duration
-  const [initialDuration, setInitialDuration] = useState(DEFAULT_TIME);
-  const [currentDuration, setCurrentDuration] = useState(DEFAULT_TIME);
+  const [isWorkTimer, setIsWorkTimer] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [workDuration, setWorkDuration] = useState(DEFAULT_WORK_TIME);
+  const [currentWorkDuration, setCurrentWorkDuration] = useState(DEFAULT_WORK_TIME); // This is for changin it and displaying it
+  const [restDuration, setRestDuration] = useState(DEFAULT_REST_TIME);
   const [key, setKey] = useState(0); // Add a key state to force re-render of timer
   // we need this for the stop button to work
   const [episodeToWatch, setEpisodeToWatch] = useAtom(nextEpisodeAtom);
@@ -104,30 +108,50 @@ export default function Timer() {
     }
   };
 
+  const handleWorkComplete = () => {
+    setIsPlaying(false);
+    setIsWorkTimer(false);
+    setRestDuration(restDuration); // resetting rest duration just in case
+    successToast(`Work timer stopped and reset`);
+  };
+
+  const handleRestComplete = () => {
+    setIsPlaying(false);
+    setIsWorkTimer(true);
+    setCurrentWorkDuration(workDuration); // resetting work duration
+    successToast(`Rest timer stopped and reset`);
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-8 p-4">
       <TimerForm
-        setInitialDuration={setInitialDuration}
-        setCurrentDuration={setCurrentDuration}
+        setInitialDuration={setWorkDuration}
+        setCurrentDuration={setCurrentWorkDuration}
         setKey={setKey}
       />
 
       <div className="flex flex-col items-center">
-        <TimerDisplay
-          key={key}
-          isPlaying={isPlaying}
-          currentDuration={currentDuration}
-          setIsPlaying={setIsPlaying}
-        // TODO: create a rest timer as well
-        // default time is gonna be 20 minutes.
-        // different colors for the timer
-        />
+        {isWorkTimer ? (
+          <WorkTimer
+            isPlaying={isPlaying}
+            duration={workDuration}
+            onComplete={handleWorkComplete}
+            timerKey={key}
+          />
+        ) : (
+          <RestTimer
+            isPlaying={isPlaying}
+            duration={restDuration}
+            onComplete={handleRestComplete}
+            timerKey={key}
+          />
+        )}
 
         <TimerControls
           isPlaying={isPlaying}
           setIsPlaying={setIsPlaying}
-          initialDuration={initialDuration}
-          setCurrentDuration={setCurrentDuration}
+          initialDuration={isWorkTimer ? workDuration : DEFAULT_REST_TIME}
+          setCurrentDuration={isWorkTimer ? setCurrentWorkDuration : () => { }}
           setKey={setKey}
         />
       </div>

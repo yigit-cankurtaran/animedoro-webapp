@@ -32,8 +32,8 @@ export const TimerForm: React.FC<TimerFormProps> = ({ setInitialDuration, setCur
       <input
         type="number"
         {...register("time")}
-        className="text-black text-center text-xl rounded-md w-40"
-        placeholder="Minutes"
+        className="text-black text-center text-align text-xl rounded-md w-40"
+        placeholder="Work Minutes"
       />
       <button type="submit" className="bg-blue-500 text-white p-1 rounded-md w-40">
         Set Time
