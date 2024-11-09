@@ -18,44 +18,62 @@ export default function AnimeId() {
   const router = useRouter();
   const { animeId } = router.query;
 
+  // object where keys are anime IDs and values are arrays of watched episode IDs
   const [watchedEpisodes, setWatchedEpisodes] = useAtom(watchedEpisodesAtom);
+
+  // object where keys are anime IDs and values are the total number of episodes
   const [totalEpisodes, setTotalEpisodes] = useAtom(totalEpisodesAtom);
+
   const [isFinished, setIsFinished] = useState(false);
   const [finishedList, setFinishedList] = useAtom(finishedListAtom);
   const [watchList, setWatchList] = useAtom(watchListAtom);
   const [episodeToWatch, setEpisodeToWatch] = useAtom(nextEpisodeAtom);
 
+  // Fetch episode data and anime details using custom hook
+  // This returns both the episodes list and basic anime information
   const { episodes, animeDetails } = useEpisodes(animeId as string);
 
+  // Destructure the episode query results for easier access
   const {
-    data,
-    isLoading,
-    isError,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-    error,
+    data,               // The actual episode data
+    isLoading,          // Boolean indicating if data is being loaded
+    isError,            // Boolean indicating if an error occurred
+    hasNextPage,        // Boolean indicating if more episodes can be loaded
+    fetchNextPage,      // Function to load the next page of episodes
+    isFetchingNextPage, // Boolean indicating if the next page is being fetched
+    error,             // Error object if something went wrong
   } = episodes;
+
+  // Destructure the anime details query results
   const {
-    data: animeData,
-    isLoading: animeLoading,
-    isError: animeError,
+    data: animeData,           // The anime's basic information
+    isLoading: animeLoading,   // Boolean indicating if anime data is loading
+    isError: animeError,       // Boolean indicating if anime data fetch errored
   } = animeDetails;
 
+  // Function to handle toggling whether an episode has been watched
+  // Uses useCallback to prevent unnecessary re-renders
   const handleWatchedToggle = useCallback(
     async (episodeId: number, episodeNumber: number) => {
       if (animeId) {
+        // Get the current list of watched episodes for this anime
         const animeWatched = watchedEpisodes[animeId as string] || [];
+
+        // If watching an episode ahead of current progress
+        // For example, if you've watched episodes 1-3 and try to mark episode 5
         if (
           !animeWatched.includes(episodeId) &&
           episodeNumber > animeWatched.length + 1
         ) {
+          // Ask user if they want to mark all previous episodes as watched
           if (
             window.confirm(
               `Do you want to mark ${episodeNumber} episodes as watched?`
             )
           ) {
+            // If user confirms, mark all episodes up to this point as watched
             setWatchedEpisodes((prev) => {
+              // Create an array of episode numbers from 1 to the current episode
               const updatedWatched = Array.from(
                 { length: episodeNumber },
                 (_, i) => i + 1
@@ -63,20 +81,23 @@ export default function AnimeId() {
               return { ...prev, [animeId as string]: updatedWatched };
             });
           } else {
+            // If user declines, only mark this specific episode as watched
             setWatchedEpisodes((prev) => {
               const updatedWatched = [...animeWatched, episodeId];
               return { ...prev, [animeId as string]: updatedWatched };
             });
           }
         } else {
+          // Normal toggle behavior: if episode is watched, unwatch it; if unwatched, watch it
           setWatchedEpisodes((prev) => {
             const updatedWatched = animeWatched.includes(episodeId)
-              ? animeWatched.filter((id) => id !== episodeId)
-              : [...animeWatched, episodeId];
+              ? animeWatched.filter((id) => id !== episodeId) // Remove episode if already watched
+              : [...animeWatched, episodeId];                 // Add episode if not watched
             return { ...prev, [animeId as string]: updatedWatched };
           });
         }
 
+        // If this anime isn't in the watch list yet, add it
         if (
           !watchList.some(
             (anime) => anime.mal_id === parseInt(animeId as string, 10)
@@ -102,10 +123,14 @@ export default function AnimeId() {
     ]
   );
 
+  // Calculate the next unwatched episode
   const nextEpisode = useMemo(() => {
     if (data && animeId) {
+      // Flatten all pages of episodes into a single array
       const allEpisodes = data.pages.flatMap((page) => page.data);
+      // Get list of watched episodes for this anime
       const animeWatched = watchedEpisodes[animeId as string] || [];
+      // Find first episode that hasn't been watched
       return allEpisodes.find(
         (episode) => !animeWatched.includes(episode.mal_id)
       );
@@ -113,20 +138,27 @@ export default function AnimeId() {
     return null;
   }, [watchedEpisodes, data, animeId]);
 
+  // Check if this anime is in the finished list
   const isInFinishedList = useMemo(() => {
     return finishedList.some(
       (anime) => anime.mal_id === parseInt(animeId as string, 10)
     );
   }, [finishedList, animeId]);
 
+  // Effect: Update the next episode to watch whenever watched episodes change
   useEffect(() => {
     if (data && animeId && !isInFinishedList) {
+      // Get all episodes and currently watched episodes
       const allEpisodes = data.pages.flatMap((page) => page.data);
       const animeWatched = watchedEpisodes[animeId as string] || [];
+      // TODO: try making this without getting all episodes
+
+      // Find the next unwatched episode
       const nextUnwatchedEpisode = allEpisodes.find(
         (episode) => !animeWatched.includes(episode.mal_id)
       );
 
+      // Update the next episode information in global state
       setEpisodeToWatch((prev) => ({
         ...prev,
         [animeId as string]: {
@@ -139,6 +171,7 @@ export default function AnimeId() {
         },
       }));
     } else if (isInFinishedList) {
+      // If anime is finished, remove it from next episode tracking
       setEpisodeToWatch((prev) => {
         const newState = { ...prev };
         delete newState[animeId as string];
@@ -147,10 +180,12 @@ export default function AnimeId() {
     }
   }, [data, watchedEpisodes, setEpisodeToWatch, animeId, isInFinishedList]);
 
+  // Effect: Check if all episodes have been watched
   useEffect(() => {
     if (data && animeId) {
       const allEpisodes = data.pages.flatMap((page) => page.data);
       const animeWatched = watchedEpisodes[animeId as string] || [];
+      // Check if every episode is in the watched list
       const allWatched = allEpisodes.every((episode) =>
         animeWatched.includes(episode.mal_id)
       );
@@ -158,9 +193,11 @@ export default function AnimeId() {
     }
   }, [watchedEpisodes, data, animeId]);
 
+  // Effect: Update total episode count when new data arrives
   useEffect(() => {
     if (data && animeId) {
       const allEpisodes = data.pages.flatMap((page) => page.data);
+      // Update total episodes, keeping the larger number if there's a discrepancy
       setTotalEpisodes((prev) => ({
         ...prev,
         [animeId as string]: Math.max(
@@ -171,10 +208,12 @@ export default function AnimeId() {
     }
   }, [data, animeId, setTotalEpisodes]);
 
+  // Effect: Add anime to finished list when all episodes are watched
   useEffect(() => {
     if (isFinished && animeId && animeData) {
       const allEpisodes = data?.pages.flatMap((page) => page.data) || [];
       const animeWatched = watchedEpisodes[animeId as string] || [];
+      // Double check that all episodes are actually watched
       const allActuallyWatched = allEpisodes.every((episode) =>
         animeWatched.includes(episode.mal_id)
       );
@@ -182,8 +221,10 @@ export default function AnimeId() {
       if (allActuallyWatched) {
         setFinishedList((prev) => {
           const id = parseInt(animeId as string, 10);
+          // Don't add if ID is invalid or already in list
           if (isNaN(id) || prev.some((anime) => anime.mal_id === id))
             return prev;
+          // Add to finished list with finished flag
           return [
             ...prev,
             {
@@ -197,34 +238,26 @@ export default function AnimeId() {
     }
   }, [isFinished, animeId, animeData, setFinishedList, data, watchedEpisodes]);
 
+  // Effect: Remove from finished list if no longer finished
   useEffect(() => {
     if (!isFinished && animeId && animeData) {
       const id = parseInt(animeId as string, 10);
+      // Filter out this anime from finished list
       setFinishedList((prev) => prev.filter((anime) => anime.mal_id !== id));
     }
   }, [isFinished, animeId, animeData, setFinishedList]);
 
-  useEffect(() => {
-    if (data && animeId) {
-      const allEpisodes = data.pages.flatMap((page) => page.data);
-      setTotalEpisodes((prev) => ({
-        ...prev,
-        [animeId as string]: Math.max(
-          prev[animeId as string] || 0,
-          allEpisodes.length
-        ),
-      }));
-    }
-  }, [data, animeId, setTotalEpisodes]);
-
+  // Set up infinite scrolling for the episodes list
   useInfiniteScroll(fetchNextPage, !!hasNextPage, isFetchingNextPage);
 
+  // Show loading spinner while data is being fetched
   if (isLoading)
     return (
       <div className="items-center justify-center">
         <ClipLoader color="#ffffff" loading={isLoading} size={150} />
       </div>
     );
+
   if (isError)
     return (
       <span>
@@ -232,50 +265,10 @@ export default function AnimeId() {
       </span>
     );
 
-  const watchedCount = watchedEpisodes[animeId as string]?.length || 0;
-  const totalCount = totalEpisodes[animeId as string] || 0;
-  const isBeingWatched = watchList.some((anime) => anime.mal_id === parseInt(animeId as string, 10));
-  // checking if the current anime is in the watchlist
-
-
-  // return (
-  //   <div>
-  //     {isBeingWatched && (
-  //       <>
-  //         <h1 className="text-center">
-  //           The anime is {isFinished ? "finished" : "not finished"}
-  //         </h1>
-  //         <h2 className="text-center">
-  //           Watched Episodes: {watchedCount} / {totalCount}
-  //         </h2>
-  //       </>
-  //     )}
-  //     {!isFinished && nextEpisode && !isInFinishedList && (
-  //       <h1 className="text-center">Next Episode: {nextEpisode.title}</h1>
-  //     )}
-  //     <div className="grid grid-cols-2 sm:grid-cols-4 text-wrap min-h-full w-full h-full">
-  //       {data?.pages
-  //         .flatMap((page) => page.data)
-  //         .map((episode) => (
-  //           <EpisodeItem
-  //             key={episode.mal_id}
-  //             episode={episode}
-  //             isWatched={
-  //               watchedEpisodes[animeId as string]?.includes(episode.mal_id) ||
-  //               false
-  //             }
-  //             onToggleWatched={handleWatchedToggle}
-  //           />
-  //         ))}
-  //     </div>
-  //     {isFetchingNextPage && (
-  //       <div className="flex justify-center items-center w-full">
-  //         <ClipLoader color="#ffffff" loading={true} size={150} />
-  //       </div>
-  //     )}
-  //   </div>
-  // );
-  //
+  // Calculate current progress statistics
+  const watchedCount = watchedEpisodes[animeId as string]?.length || 0;  // Number of watched episodes
+  const totalCount = totalEpisodes[animeId as string] || 0;              // Total number of episodes
+  const isBeingWatched = watchList.some((anime) => anime.mal_id === parseInt(animeId as string, 10)); // Check if anime is in watch list
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
